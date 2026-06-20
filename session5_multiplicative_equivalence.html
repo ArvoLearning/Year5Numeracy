@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 5 — Equivalence in Number Sentences (Multiplicative)</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple: #6C5CE7;
+    --purple-light: #a29bfe;
+    --purple-pale: #f0eeff;
+    --purple-dark: #4a3bb5;
+    --teal: #00b894;
+    --teal-light: #55efc4;
+    --teal-pale: #e0fff6;
+    --orange: #e17055;
+    --orange-pale: #fff0eb;
+    --yellow: #fdcb6e;
+    --yellow-pale: #fffbee;
+    --pink: #fd79a8;
+    --pink-pale: #fff0f6;
+    --navy: #2d3436;
+    --gray: #636e72;
+    --gray-light: #b2bec3;
+    --gray-pale: #f7f8fc;
+    --white: #ffffff;
+    --shadow-sm: 0 2px 8px rgba(108,92,231,0.08);
+    --shadow-md: 0 4px 20px rgba(108,92,231,0.14);
+    --shadow-lg: 0 8px 40px rgba(108,92,231,0.18);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-pill: 999px;
+    --font-display: 'Nunito', sans-serif;
+    --font-body: 'Nunito Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: #f0eeff;
+    background-image: radial-gradient(circle at 20% 10%, #d8d4ff 0%, transparent 50%),
+                      radial-gradient(circle at 80% 90%, #c8f7e8 0%, transparent 50%);
+    min-height: 100vh;
+    color: var(--navy);
+  }
+
+  /* ── TOP HEADER ─────────────────────────────── */
+  .header {
+    background: var(--purple);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(108,92,231,0.3);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .header-title {
+    padding: 16px 0;
+    flex: 1;
+  }
+  .header-title .session-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--purple-light);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .header-title h1 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .header-timer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+    border-left: 1px solid rgba(255,255,255,0.15);
+  }
+  .timer-display {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.05em;
+    min-width: 60px;
+  }
+  .timer-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: var(--radius-pill);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 12px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .timer-btn:hover { background: rgba(255,255,255,0.25); }
+  .timer-label { font-size: 11px; color: var(--purple-light); font-weight: 600; }
+
+  /* ── NAV TABS ─────────────────────────────── */
+  .nav-bar {
+    background: var(--white);
+    border-bottom: 2px solid var(--purple-pale);
+    position: sticky;
+    top: 64px;
+    z-index: 99;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    padding: 14px 20px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray);
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+  }
+  .nav-tab:hover { color: var(--purple); }
+  .nav-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+  .nav-tab .tab-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--gray-light);
+    transition: background 0.2s;
+  }
+  .nav-tab.done .tab-dot { background: var(--teal); }
+  .nav-tab.active .tab-dot { background: var(--purple); }
+
+  /* ── MAIN CONTENT ─────────────────────────── */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .section-header {
+    margin-bottom: 24px;
+  }
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    margin-bottom: 8px;
+  }
+  .section-tag.purple { background: var(--purple-pale); color: var(--purple-dark); }
+  .section-tag.teal { background: var(--teal-pale); color: #007a60; }
+  .section-tag.orange { background: var(--orange-pale); color: #9d4a30; }
+  .section-tag.yellow { background: var(--yellow-pale); color: #9a7000; }
+  .section-tag.pink { background: var(--pink-pale); color: #a0325a; }
+  .section-header h2 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--navy);
+    line-height: 1.2;
+  }
+  .section-header p {
+    font-size: 15px;
+    color: var(--gray);
+    margin-top: 4px;
+    line-height: 1.6;
+  }
+
+  /* ── CARDS ─────────────────────────────────── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s;
+  }
+  .card:hover { box-shadow: var(--shadow-md); }
+  .card-grid { display: grid; gap: 16px; }
+  .card-grid-2 { grid-template-columns: 1fr 1fr; }
+  .card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* ── WARM-UP ────────────────────────────────── */
+  .warmup-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    border-top: 4px solid var(--purple-light);
+    position: relative;
+    overflow: hidden;
+  }
+  .warmup-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    background: var(--purple-pale);
+    border-radius: 50%;
+  }
+  .warmup-eq {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--purple);
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .warmup-hint {
+    font-size: 13px;
+    color: var(--gray-light);
+    margin-bottom: 16px;
+  }
+  .big-reveal-btn {
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 800;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(108,92,231,0.35);
+  }
+  .big-reveal-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108,92,231,0.45); }
+  .big-reveal-btn:active { transform: translateY(0); }
+  .big-reveal-btn:disabled { background: var(--teal); box-shadow: 0 4px 15px rgba(0,184,148,0.3); cursor: default; transform: none; }
+  .answer-pop {
+    margin-top: 14px;
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--teal);
+    min-height: 36px;
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .inverse-tag {
+    display: inline-block;
+    background: var(--teal-pale);
+    color: #007a60;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: var(--radius-pill);
+    margin-top: 6px;
+  }
+
+  /* ── KEY IDEA BOX ──────────────────────────── */
+  .idea-box {
+    background: linear-gradient(135deg, var(--purple-pale), #e8e4ff);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    border-left: 4px solid var(--purple);
+    margin-top: 20px;
+  }
+  .idea-box-title {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--purple-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+  }
+  .idea-box p {
+    font-size: 14px;
+    color: var(--purple-dark);
+    line-height: 1.7;
+  }
+
+  /* ── BALANCE BEAM SVG ──────────────────────── */
+  .beam-stage {
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    border-radius: var(--radius);
+    padding: 28px 24px 20px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .beam-stage::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(circle at 50% 50%, rgba(108,92,231,0.15) 0%, transparent 70%);
+  }
+  .beam-svg { width: 100%; max-width: 700px; display: block; margin: 0 auto; }
+  .beam-step-eq {
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 900;
+    color: #fff;
+    margin-top: 12px;
+    min-height: 32px;
+    letter-spacing: 0.02em;
+  }
+
+  .ex-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .ex-tab-btn {
+    padding: 9px 18px;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    border: 2px solid var(--purple-light);
+    background: var(--white);
+    color: var(--purple);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .ex-tab-btn.active { background: var(--purple); color: #fff; border-color: var(--purple); box-shadow: 0 4px 12px rgba(108,92,231,0.3); }
+  .ex-tab-btn:hover:not(.active) { background: var(--purple-pale); }
+
+  .steps-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .step-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    box-shadow: var(--shadow-sm);
+    opacity: 0;
+    transform: translateX(-16px);
+    transition: all 0.4s cubic-bezier(0.34,1.2,0.64,1);
+  }
+  .step-item.visible { opacity: 1; transform: none; }
+  .step-num-badge {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--purple);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-content {}
+  .step-eq-line {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 2px;
+  }
+  .step-eq-line .inv { color: var(--orange); }
+  .step-desc {
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.5;
+  }
+
+  .next-btn {
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 800;
+    padding: 11px 26px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 15px rgba(108,92,231,0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108,92,231,0.4); }
+  .next-btn:disabled { background: var(--gray-light); box-shadow: none; transform: none; cursor: default; }
+  .reset-btn {
+    background: transparent;
+    color: var(--gray);
+    border: 2px solid var(--gray-light);
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .reset-btn:hover { border-color: var(--purple); color: var(--purple); }
+
+  /* ── PRACTICE ───────────────────────────────── */
+  .prac-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    border-top: 4px solid var(--purple-light);
+    transition: all 0.2s;
+  }
+  .prac-card.solved { border-top-color: var(--teal); }
+  .prac-card.twostep { border-top-color: var(--yellow); }
+  .prac-card.twostep.solved { border-top-color: var(--teal); }
+  .prac-eq-big {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--purple);
+    text-align: center;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+  .prac-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .prac-label {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray);
+    white-space: nowrap;
+  }
+  .prac-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid var(--purple-light);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--navy);
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+    background: var(--gray-pale);
+    max-width: 90px;
+  }
+  .prac-input:focus { border-color: var(--purple); background: #fff; }
+  .prac-input.correct { border-color: var(--teal); background: var(--teal-pale); color: var(--teal); }
+  .prac-input.wrong { border-color: var(--orange); background: var(--orange-pale); }
+  .check-eq-btn {
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 800;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .check-eq-btn:hover { background: var(--purple-dark); transform: scale(1.03); }
+  .check-eq-btn:disabled { background: var(--gray-light); transform: none; cursor: default; }
+  .prac-feedback {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    min-height: 20px;
+    text-align: center;
+    padding: 6px 0;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+  }
+  .prac-feedback.correct { color: var(--teal); background: var(--teal-pale); padding: 6px 12px; }
+  .prac-feedback.wrong { color: var(--orange); background: var(--orange-pale); padding: 6px 12px; }
+  .twostep-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--yellow-pale);
+    color: #7a5800;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    margin-bottom: 10px;
+    border: 1px solid var(--yellow);
+  }
+  .hint-steps {
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 12px;
+    background: var(--yellow-pale);
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--yellow);
+  }
+  .hint-steps.open { display: flex; }
+  .hint-step { font-size: 13px; color: #7a5800; font-weight: 600; }
+  .show-hint-btn {
+    background: transparent;
+    border: 1px dashed var(--yellow);
+    color: #9a7000;
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .show-hint-btn:hover { background: var(--yellow-pale); }
+
+  /* ── WORD PROBLEM ──────────────────────────── */
+  .word-card {
+    background: linear-gradient(135deg, #fff9f0, #fff3e0);
+    border-radius: var(--radius);
+    padding: 24px;
+    border: 2px solid var(--yellow);
+    position: relative;
+    overflow: hidden;
+  }
+  .word-card::before {
+    content: '🍪';
+    position: absolute;
+    top: 16px; right: 20px;
+    font-size: 40px;
+    opacity: 0.3;
+  }
+  .word-q {
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--navy);
+    margin-bottom: 16px;
+  }
+  .word-q strong { color: var(--orange); }
+  .reveal-eq-btn {
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 800;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 12px rgba(225,112,85,0.35);
+  }
+  .reveal-eq-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(225,112,85,0.45); }
+  .word-eq-revealed {
+    display: none;
+    margin-top: 14px;
+    animation: fadeIn 0.4s ease;
+  }
+  .word-eq-revealed.show { display: block; }
+  .big-eq-badge {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--purple);
+    background: var(--purple-pale);
+    padding: 8px 20px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 14px;
+  }
+
+  /* ── CHECK ANSWER ──────────────────────────── */
+  .verify-panel {
+    background: linear-gradient(135deg, var(--navy), #1e272e);
+    border-radius: var(--radius);
+    padding: 28px;
+    color: #fff;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .verify-panel::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: rgba(108,92,231,0.2);
+    border-radius: 50%;
+  }
+  .verify-panel h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .verify-select-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .verify-select {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    outline: none;
+    cursor: pointer;
+  }
+  .verify-select option { color: var(--navy); background: #fff; }
+  .verify-x-input {
+    width: 80px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 900;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .verify-x-input:focus { border-color: var(--purple-light); background: rgba(255,255,255,0.18); }
+  .verify-x-input::placeholder { color: rgba(255,255,255,0.3); }
+  .verify-go-btn {
+    background: var(--purple);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 800;
+    padding: 11px 26px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(108,92,231,0.4);
+  }
+  .verify-go-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108,92,231,0.5); }
+  .verify-working {
+    background: rgba(255,255,255,0.08);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin-top: 12px;
+    min-height: 60px;
+    display: none;
+  }
+  .verify-working.show { display: block; animation: fadeIn 0.3s ease; }
+  .verify-working-line {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.8;
+  }
+  .verify-result-big {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 900;
+    margin-top: 8px;
+  }
+  .verify-result-big.ok { color: var(--teal-light); }
+  .verify-result-big.fail { color: #ff7675; }
+
+  .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .summary-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    border-top: 4px solid var(--purple-light);
+  }
+  .summary-card h4 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--purple);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 6px;
+  }
+  .summary-card p { font-size: 13px; color: var(--gray); line-height: 1.6; }
+  .summary-card code {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-top: 4px;
+  }
+
+  /* ── SCORE TRACKER ─────────────────────────── */
+  .score-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--purple-pale);
+    border-radius: var(--radius-pill);
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+  .score-label { font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--purple); }
+  .score-stars { display: flex; gap: 4px; }
+  .star { font-size: 18px; filter: grayscale(1) opacity(0.3); transition: all 0.3s; }
+  .star.earned { filter: none; animation: starPop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes starPop { from { transform: scale(0); } to { transform: scale(1); } }
+  .score-count { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--purple); }
+
+  /* ── CONFETTI ──────────────────────────────── */
+  .confetti-piece {
+    position: fixed;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    animation: confettiFall 1.2s ease-in forwards;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ── INTRO SECTION ─────────────────────────── */
+  .inv-pair-card {
+    border-radius: var(--radius);
+    padding: 22px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .inv-pair-card.mult { background: linear-gradient(135deg, var(--purple-pale), #e2deff); }
+  .inv-pair-card.div { background: linear-gradient(135deg, var(--teal-pale), #c8f7e8); }
+  .inv-pair-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .inv-pair-card.mult .inv-pair-label { color: var(--purple-dark); }
+  .inv-pair-card.div .inv-pair-label { color: #007a60; }
+  .inv-pair-eq {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+  .inv-pair-card.mult .inv-pair-eq { color: var(--purple); }
+  .inv-pair-card.div .inv-pair-eq { color: var(--teal); }
+  .inv-pair-desc { font-size: 13px; color: var(--gray); margin-top: 6px; }
+  .arrow-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--gray-light);
+    padding: 0 8px;
+  }
+  .balance-rule-card {
+    background: var(--navy);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-top: 16px;
+  }
+  .balance-rule-card h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: var(--yellow);
+  }
+  .balance-rule-card p { font-size: 14px; line-height: 1.8; color: rgba(255,255,255,0.85); }
+  .balance-rule-card strong { color: var(--purple-light); }
+
+  /* ── RESPONSIVE ────────────────────────────── */
+  @media (max-width: 700px) {
+    .card-grid-2, .card-grid-3 { grid-template-columns: 1fr; }
+    .header-timer { display: none; }
+    .prac-eq-big { font-size: 24px; }
+    .warmup-eq { font-size: 28px; }
+    .arrow-connector { transform: rotate(90deg); padding: 4px 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-title">
+      <div class="session-label">⚖️ Session 5 · Maths</div>
+      <h1>Equivalence in Number Sentences <span style="font-weight:400;opacity:0.7">(Multiplicative)</span></h1>
+    </div>
+    <div class="header-timer">
+      <div>
+        <div class="timer-label">Time</div>
+        <div class="timer-display" id="timer-display">50:00</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <button class="timer-btn" onclick="toggleTimer()">▶ Start</button>
+        <button class="timer-btn" onclick="resetTimer()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <button class="nav-tab active" onclick="goSection('warmup', this)" id="tab-warmup">
+      <span class="tab-dot"></span> 🔥 Warm-up <span style="font-size:11px;opacity:0.6">(5 min)</span>
+    </button>
+    <button class="nav-tab" onclick="goSection('intro', this)" id="tab-intro">
+      <span class="tab-dot"></span> ⚖️ Introduction <span style="font-size:11px;opacity:0.6">(10 min)</span>
+    </button>
+    <button class="nav-tab" onclick="goSection('beam', this)" id="tab-beam">
+      <span class="tab-dot"></span> 🔢 Balance Beam <span style="font-size:11px;opacity:0.6">(15 min)</span>
+    </button>
+    <button class="nav-tab" onclick="goSection('practice', this)" id="tab-practice">
+      <span class="tab-dot"></span> ✏️ Practice <span style="font-size:11px;opacity:0.6">(15 min)</span>
+    </button>
+    <button class="nav-tab" onclick="goSection('wrapup', this)" id="tab-wrapup">
+      <span class="tab-dot"></span> ✅ Check Answer <span style="font-size:11px;opacity:0.6">(5 min)</span>
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ══ WARM-UP ══ -->
+  <section class="section active" id="sec-warmup">
+    <div class="section-header">
+      <div class="section-tag purple">🔥 Warm-up · 5 minutes</div>
+      <h2>Inverse Operations Review</h2>
+      <p>Let's warm up our brains! Use inverse operations to find the unknown. Click to reveal the answer.</p>
+    </div>
+
+    <div class="card-grid card-grid-2" style="margin-bottom:16px">
+      <div class="warmup-card">
+        <div class="warmup-eq">X + 5 = 12</div>
+        <div class="warmup-hint">What gets X alone on one side?</div>
+        <button class="big-reveal-btn" onclick="revealWarmup(this, 'X = 12 − 5 = 7', 'Inverse: subtraction undoes addition')">
+          Reveal Answer 👀
+        </button>
+        <div id="wa1" style="min-height:36px"></div>
+      </div>
+      <div class="warmup-card">
+        <div class="warmup-eq">X − 3 = 10</div>
+        <div class="warmup-hint">What gets X alone on one side?</div>
+        <button class="big-reveal-btn" onclick="revealWarmup(this, 'X = 10 + 3 = 13', 'Inverse: addition undoes subtraction')">
+          Reveal Answer 👀
+        </button>
+        <div id="wa2" style="min-height:36px"></div>
+      </div>
+    </div>
+
+    <div class="idea-box">
+      <div class="idea-box-title">💡 Key Idea</div>
+      <p>The <strong>equals sign means both sides are balanced</strong>. To find an unknown, apply the <strong>inverse (opposite) operation to both sides</strong> — keeping the balance. Today we use this idea with <strong>multiplication and division!</strong></p>
+    </div>
+
+    <div style="margin-top:20px; text-align:right">
+      <button class="next-btn" onclick="goSection('intro', document.getElementById('tab-intro'))">Next: Introduction →</button>
+    </div>
+  </section>
+
+  <!-- ══ INTRODUCTION ══ -->
+  <section class="section" id="sec-intro">
+    <div class="section-header">
+      <div class="section-tag teal">⚖️ Introduction · 10 minutes</div>
+      <h2>Balancing Equations</h2>
+      <p>Multiplication and division are <strong>inverse operations</strong> — they undo each other, just like addition and subtraction.</p>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:0; margin-bottom:16px; flex-wrap:wrap">
+      <div class="inv-pair-card mult" style="flex:1; min-width:160px">
+        <div class="inv-pair-label">Multiplication</div>
+        <div class="inv-pair-eq">3 × 6 = 18</div>
+        <div class="inv-pair-desc">Groups of equal size</div>
+      </div>
+      <div class="arrow-connector">⇄</div>
+      <div class="inv-pair-card div" style="flex:1; min-width:160px">
+        <div class="inv-pair-label">Division (inverse)</div>
+        <div class="inv-pair-eq">18 ÷ 3 = 6</div>
+        <div class="inv-pair-desc">Undoes multiplication</div>
+      </div>
+    </div>
+
+    <div class="balance-rule-card">
+      <h3>⚖️ The Balance Rule</h3>
+      <p>
+        Whatever we do to <strong>one side</strong> of an equation, we must do the <strong>exact same thing</strong> to the other side — to keep it balanced.<br><br>
+        To solve <strong>3 × X = 18</strong>: divide <strong>both sides</strong> by 3 &nbsp;→&nbsp; X = 6<br>
+        To solve <strong>X ÷ 5 = 7</strong>: multiply <strong>both sides</strong> by 5 &nbsp;→&nbsp; X = 35
+      </p>
+    </div>
+
+    <div class="idea-box" style="margin-top:16px">
+      <div class="idea-box-title">📦 Unknown Variable</div>
+      <p>We use a <strong>box □</strong> or letter <strong>X</strong> to represent the number we don't know yet. Our goal is always to get X alone on one side of the equation.</p>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px; justify-content:space-between">
+      <button class="reset-btn" onclick="goSection('warmup', document.getElementById('tab-warmup'))">← Back</button>
+      <button class="next-btn" onclick="goSection('beam', document.getElementById('tab-beam'))">Next: Balance Beam →</button>
+    </div>
+  </section>
+
+  <!-- ══ BALANCE BEAM ══ -->
+  <section class="section" id="sec-beam">
+    <div class="section-header">
+      <div class="section-tag orange">🔢 Deep Dive · 15 minutes</div>
+      <h2>Balance Beam Equations</h2>
+      <p>Watch the step-by-step. Press <strong>Next Step</strong> to apply the inverse operation on both sides.</p>
+    </div>
+
+    <div class="ex-tabs">
+      <button class="ex-tab-btn active" onclick="loadExample(0, this)">Example 1: 3 × X = 18</button>
+      <button class="ex-tab-btn" onclick="loadExample(1, this)">Example 2: X ÷ 5 = 7</button>
+    </div>
+
+    <div class="beam-stage">
+      <svg class="beam-svg" id="beam-svg" viewBox="0 0 640 160" xmlns="http://www.w3.org/2000/svg">
+        <!-- stars bg -->
+        <circle cx="30" cy="30" r="2" fill="rgba(255,255,255,0.2)"/>
+        <circle cx="600" cy="20" r="1.5" fill="rgba(255,255,255,0.15)"/>
+        <circle cx="580" cy="140" r="1" fill="rgba(255,255,255,0.1)"/>
+        <circle cx="60" cy="130" r="1.5" fill="rgba(255,255,255,0.12)"/>
+        <!-- fulcrum -->
+        <polygon id="fulcrum" points="320,136 305,154 335,154" fill="#a29bfe"/>
+        <rect x="317" y="130" width="6" height="8" fill="#a29bfe" rx="2"/>
+        <!-- beam -->
+        <rect id="beam-bar" x="80" y="122" width="480" height="10" rx="5" fill="#6C5CE7"/>
+        <!-- Left platform -->
+        <rect id="left-pan" x="60" y="74" width="160" height="50" rx="10" fill="rgba(255,255,255,0.1)" stroke="rgba(162,155,254,0.7)" stroke-width="1.5"/>
+        <text id="left-label" x="140" y="106" font-size="22" font-weight="900" text-anchor="middle" fill="#a29bfe" font-family="Nunito, sans-serif">3 × X</text>
+        <!-- Right platform -->
+        <rect id="right-pan" x="420" y="74" width="160" height="50" rx="10" fill="rgba(255,255,255,0.1)" stroke="rgba(162,155,254,0.7)" stroke-width="1.5"/>
+        <text id="right-label" x="500" y="106" font-size="22" font-weight="900" text-anchor="middle" fill="#a29bfe" font-family="Nunito, sans-serif">18</text>
+        <!-- = sign -->
+        <text x="320" y="106" font-size="18" text-anchor="middle" fill="rgba(255,255,255,0.4)" font-family="Nunito, sans-serif">=</text>
+        <!-- operation labels -->
+        <text id="left-op-label" x="140" y="62" font-size="14" font-weight="800" text-anchor="middle" fill="#fdcb6e" font-family="Nunito, sans-serif" opacity="0"></text>
+        <text id="right-op-label" x="500" y="62" font-size="14" font-weight="800" text-anchor="middle" fill="#fdcb6e" font-family="Nunito, sans-serif" opacity="0"></text>
+        <!-- arrows (shown when op active) -->
+        <text id="left-arrow" x="140" y="44" font-size="18" text-anchor="middle" fill="#fdcb6e" opacity="0">↓</text>
+        <text id="right-arrow" x="500" y="44" font-size="18" text-anchor="middle" fill="#fdcb6e" opacity="0">↓</text>
+      </svg>
+      <div class="beam-step-eq" id="beam-eq-display">3 × X = 18</div>
+    </div>
+
+    <div class="steps-list" id="steps-list"></div>
+
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+      <button class="next-btn" id="next-step-btn" onclick="advanceStep()">Next Step →</button>
+      <button class="reset-btn" onclick="resetExample()">↺ Restart</button>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px; justify-content:space-between">
+      <button class="reset-btn" onclick="goSection('intro', document.getElementById('tab-intro'))">← Back</button>
+      <button class="next-btn" onclick="goSection('practice', document.getElementById('tab-practice'))">Next: Practice →</button>
+    </div>
+  </section>
+
+  <!-- ══ PRACTICE ══ -->
+  <section class="section" id="sec-practice">
+    <div class="section-header">
+      <div class="section-tag yellow">✏️ Practice · 15 minutes</div>
+      <h2>Solve for X</h2>
+      <p>Use inverse operations to find X. Type your answer and hit <strong>Check</strong>!</p>
+    </div>
+
+    <div class="score-bar">
+      <span class="score-label">Score:</span>
+      <div class="score-stars" id="score-stars">
+        <span class="star" id="star1">⭐</span>
+        <span class="star" id="star2">⭐</span>
+        <span class="star" id="star3">⭐</span>
+        <span class="star" id="star4">⭐</span>
+        <span class="star" id="star5">⭐</span>
+        <span class="star" id="star6">⭐</span>
+      </div>
+      <span class="score-count" id="score-count">0 / 6</span>
+    </div>
+
+    <div class="card-grid card-grid-2" style="margin-bottom:16px">
+      <!-- Q1 -->
+      <div class="prac-card" id="pc1">
+        <div class="prac-eq-big">4 × X = 28</div>
+        <div class="prac-input-row">
+          <span class="prac-label">X =</span>
+          <input type="number" class="prac-input" id="pi1" placeholder="?" onkeydown="if(event.key==='Enter')checkPrac(1,7)">
+          <button class="check-eq-btn" id="cb1" onclick="checkPrac(1,7)">Check ✓</button>
+        </div>
+        <div class="prac-feedback" id="pf1"></div>
+      </div>
+      <!-- Q2 -->
+      <div class="prac-card" id="pc2">
+        <div class="prac-eq-big">X × 6 = 42</div>
+        <div class="prac-input-row">
+          <span class="prac-label">X =</span>
+          <input type="number" class="prac-input" id="pi2" placeholder="?" onkeydown="if(event.key==='Enter')checkPrac(2,7)">
+          <button class="check-eq-btn" id="cb2" onclick="checkPrac(2,7)">Check ✓</button>
+        </div>
+        <div class="prac-feedback" id="pf2"></div>
+      </div>
+      <!-- Q3 -->
+      <div class="prac-card" id="pc3">
+        <div class="prac-eq-big">50 ÷ X = 10</div>
+        <div class="prac-input-row">
+          <span class="prac-label">X =</span>
+          <input type="number" class="prac-input" id="pi3" placeholder="?" onkeydown="if(event.key==='Enter')checkPrac(3,5)">
+          <button class="check-eq-btn" id="cb3" onclick="checkPrac(3,5)">Check ✓</button>
+        </div>
+        <div class="prac-feedback" id="pf3"></div>
+      </div>
+      <!-- Q4 -->
+      <div class="prac-card" id="pc4">
+        <div class="prac-eq-big">X ÷ 7 = 9</div>
+        <div class="prac-input-row">
+          <span class="prac-label">X =</span>
+          <input type="number" class="prac-input" id="pi4" placeholder="?" onkeydown="if(event.key==='Enter')checkPrac(4,63)">
+          <button class="check-eq-btn" id="cb4" onclick="checkPrac(4,63)">Check ✓</button>
+        </div>
+        <div class="prac-feedback" id="pf4"></div>
+      </div>
+    </div>
+
+    <!-- Two-step -->
+    <div class="prac-card twostep" id="pc5" style="margin-bottom:16px">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap">
+        <span class="twostep-hint">⚡ Two-step problem</span>
+        <button class="show-hint-btn" onclick="toggleHint()">Show hint 💡</button>
+      </div>
+      <div class="prac-eq-big">2 × X + 5 = 15</div>
+      <div class="hint-steps" id="hint-box">
+        <div class="hint-step">Step 1: Subtract 5 from both sides → 2 × X = 10</div>
+        <div class="hint-step">Step 2: Divide both sides by 2 → X = 5</div>
+      </div>
+      <div class="prac-input-row" style="margin-top:12px">
+        <span class="prac-label">X =</span>
+        <input type="number" class="prac-input" id="pi5" placeholder="?" onkeydown="if(event.key==='Enter')checkPrac(5,5)">
+        <button class="check-eq-btn" id="cb5" onclick="checkPrac(5,5)">Check ✓</button>
+      </div>
+      <div class="prac-feedback" id="pf5"></div>
+    </div>
+
+    <!-- Word problem -->
+    <div class="word-card" id="pc6-wrap">
+      <div style="font-family:var(--font-display); font-size:13px; font-weight:800; color:#9d4a30; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">🍪 Word Problem</div>
+      <div class="word-q">
+        A baker baked some cookies. He put them into <strong>8 bags</strong> with <strong>6 cookies</strong> in each bag.
+        How many cookies did he bake in total?
+      </div>
+      <button class="reveal-eq-btn" id="word-eq-btn" onclick="revealWordEq()">Show equation 👁</button>
+      <div class="word-eq-revealed" id="word-eq-section">
+        <div class="big-eq-badge">X ÷ 8 = 6</div>
+        <div style="font-size:13px; color:var(--gray); margin-bottom:10px;">Total cookies ÷ 8 bags = 6 cookies per bag. Find X!</div>
+        <div class="prac-card" id="pc6" style="margin:0; border-top-color: var(--orange);">
+          <div class="prac-input-row">
+            <span class="prac-label">X =</span>
+            <input type="number" class="prac-input" id="pi6" placeholder="?" onkeydown="if(event.key==='Enter')checkPrac(6,48)">
+            <button class="check-eq-btn" id="cb6" onclick="checkPrac(6,48)">Check ✓</button>
+          </div>
+          <div class="prac-feedback" id="pf6"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px; justify-content:space-between">
+      <button class="reset-btn" onclick="goSection('beam', document.getElementById('tab-beam'))">← Back</button>
+      <button class="next-btn" onclick="goSection('wrapup', document.getElementById('tab-wrapup'))">Next: Check Answer →</button>
+    </div>
+  </section>
+
+  <!-- ══ WRAP-UP ══ -->
+  <section class="section" id="sec-wrapup">
+    <div class="section-header">
+      <div class="section-tag pink">✅ Wrap-up · 5 minutes</div>
+      <h2>Check Your Answer</h2>
+      <p>Once you find X, <strong>substitute it back</strong> into the original equation. If both sides match — you're correct! 🎉</p>
+    </div>
+
+    <div class="verify-panel">
+      <h3>🔄 Substitution Checker</h3>
+      <div class="verify-select-row">
+        <select class="verify-select" id="verify-eq-sel">
+          <option value="mult">4 × X = 28</option>
+          <option value="mult2">X × 6 = 42</option>
+          <option value="div1">50 ÷ X = 10</option>
+          <option value="div2">X ÷ 7 = 9</option>
+          <option value="two">2 × X + 5 = 15</option>
+          <option value="baker">X ÷ 8 = 6 (baker)</option>
+        </select>
+        <span style="font-family:var(--font-display); font-weight:700; font-size:15px">My X =</span>
+        <input type="number" class="verify-x-input" id="verify-x-val" placeholder="?">
+        <button class="verify-go-btn" onclick="verifyAnswer()">Substitute! →</button>
+      </div>
+      <div class="verify-working" id="verify-working">
+        <div class="verify-working-line" id="verify-line1"></div>
+        <div class="verify-working-line" id="verify-line2"></div>
+        <div class="verify-result-big" id="verify-result"></div>
+      </div>
+    </div>
+
+    <div style="padding:16px 20px; background:var(--teal-pale); border-radius:var(--radius); border:2px solid var(--teal); margin-bottom:20px;">
+      <div style="font-family:var(--font-display); font-size:14px; font-weight:800; color:#007a60; margin-bottom:8px;">✅ How to check any answer — 4 steps</div>
+      <ol style="font-size:14px; color:#007a60; line-height:2; padding-left:20px;">
+        <li>Write down the <strong>original equation</strong></li>
+        <li><strong>Substitute</strong> your value of X into it</li>
+        <li>Calculate the left side — does it <strong>equal the right side?</strong></li>
+        <li>If yes → ✅ Correct! &nbsp; If no → ❌ Recheck your inverse operation</li>
+      </ol>
+    </div>
+
+    <div style="font-family:var(--font-display); font-size:15px; font-weight:800; color:var(--navy); margin-bottom:12px;">📚 Session Summary</div>
+    <div class="summary-cards">
+      <div class="summary-card">
+        <h4>Multiplication unknown</h4>
+        <code>3 × X = 18</code>
+        <p>Divide both sides by 3<br>→ X = 6</p>
+      </div>
+      <div class="summary-card">
+        <h4>Division unknown</h4>
+        <code>X ÷ 5 = 7</code>
+        <p>Multiply both sides by 5<br>→ X = 35</p>
+      </div>
+      <div class="summary-card">
+        <h4>Two-step problem</h4>
+        <code>2×X + 5 = 15</code>
+        <p>Subtract 5, then divide by 2<br>→ X = 5</p>
+      </div>
+      <div class="summary-card">
+        <h4>Always check!</h4>
+        <code>Substitute X back in</code>
+        <p>Both sides must balance<br>to confirm your answer</p>
+      </div>
+    </div>
+
+    <div style="margin-top:24px; text-align:center">
+      <button class="next-btn" onclick="celebrate()" style="font-size:16px; padding:14px 36px; background: linear-gradient(135deg, var(--purple), var(--pink))">
+        🎉 Complete Session!
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ── SECTION NAVIGATION ────────────────────────
+const sectionOrder = ['warmup','intro','beam','practice','wrapup'];
+const completedSections = new Set();
+
+function goSection(id, tabEl) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  tabEl.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  completedSections.add(id);
+  document.querySelectorAll('.nav-tab').forEach((t, i) => {
+    if (completedSections.has(sectionOrder[i])) t.classList.add('done');
+  });
+}
+
+// ── TIMER ─────────────────────────────────────
+let timerSeconds = 50 * 60;
+let timerRunning = false;
+let timerInterval = null;
+
+function toggleTimer() {
+  timerRunning = !timerRunning;
+  const btn = document.querySelector('.timer-btn');
+  if (timerRunning) {
+    btn.textContent = '⏸ Pause';
+    timerInterval = setInterval(() => {
+      if (timerSeconds > 0) {
+        timerSeconds--;
+        updateTimerDisplay();
+      } else {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        btn.textContent = '▶ Start';
+      }
+    }, 1000);
+  } else {
+    btn.textContent = '▶ Resume';
+    clearInterval(timerInterval);
+  }
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 50 * 60;
+  updateTimerDisplay();
+  document.querySelector('.timer-btn').textContent = '▶ Start';
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+  const s = (timerSeconds % 60).toString().padStart(2, '0');
+  document.getElementById('timer-display').textContent = m + ':' + s;
+}
+
+// ── WARM-UP ───────────────────────────────────
+let warmupAnswered = 0;
+function revealWarmup(btn, answer, inverse) {
+  const card = btn.closest('.warmup-card');
+  const idx = warmupAnswered === 0 ? 'wa1' : 'wa2';
+  const container = card.querySelector('[id^="wa"]') || document.getElementById('wa' + (warmupAnswered + 1));
+  container.innerHTML = `<div class="answer-pop">${answer}</div><div class="inverse-tag">${inverse}</div>`;
+  btn.textContent = '✅ Revealed!';
+  btn.disabled = true;
+  warmupAnswered++;
+}
+
+// ── BALANCE BEAM ──────────────────────────────
+const examples = [
+  {
+    steps: [
+      {
+        left: '3 × X', right: '18', leftOp: '', rightOp: '',
+        eq: '3 × X = 18',
+        num: 1, title: 'Start: identify the unknown',
+        desc: 'X is being multiplied by 3. We need to get X alone on the left side.',
+        invHtml: ''
+      },
+      {
+        left: '3 × X', right: '18', leftOp: '÷ 3', rightOp: '÷ 3',
+        eq: '3 × X ÷ 3 = 18 ÷ 3',
+        num: 2, title: 'Apply inverse: divide both sides by 3',
+        desc: 'The inverse of × 3 is ÷ 3. We divide BOTH sides to keep the balance.',
+        invHtml: '<span class="inv">÷ 3</span>'
+      },
+      {
+        left: 'X', right: '6', leftOp: '', rightOp: '',
+        eq: 'X = 6 ✓',
+        num: 3, title: 'Simplify: X = 6',
+        desc: '3 ÷ 3 = 1, so 3 × X ÷ 3 = X. And 18 ÷ 3 = 6. We found X!',
+        invHtml: ''
+      }
+    ]
+  },
+  {
+    steps: [
+      {
+        left: 'X ÷ 5', right: '7', leftOp: '', rightOp: '',
+        eq: 'X ÷ 5 = 7',
+        num: 1, title: 'Start: identify the unknown',
+        desc: 'X is being divided by 5. We need to get X alone on the left side.',
+        invHtml: ''
+      },
+      {
+        left: 'X ÷ 5', right: '7', leftOp: '× 5', rightOp: '× 5',
+        eq: '(X ÷ 5) × 5 = 7 × 5',
+        num: 2, title: 'Apply inverse: multiply both sides by 5',
+        desc: 'The inverse of ÷ 5 is × 5. We multiply BOTH sides to keep the balance.',
+        invHtml: '<span class="inv">× 5</span>'
+      },
+      {
+        left: 'X', right: '35', leftOp: '', rightOp: '',
+        eq: 'X = 35 ✓',
+        num: 3, title: 'Simplify: X = 35',
+        desc: '÷5 and ×5 cancel out, leaving X alone. 7 × 5 = 35. We found X!',
+        invHtml: ''
+      }
+    ]
+  }
+];
+
+let currentExIdx = 0;
+let currentStepIdx = 0;
+
+function loadExample(idx, btn) {
+  document.querySelectorAll('.ex-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentExIdx = idx;
+  currentStepIdx = 0;
+  renderBeamStep();
+  document.getElementById('steps-list').innerHTML = '';
+  document.getElementById('next-step-btn').disabled = false;
+}
+
+function renderBeamStep() {
+  const ex = examples[currentExIdx];
+  const s = ex.steps[currentStepIdx];
+  document.getElementById('left-label').textContent = s.left;
+  document.getElementById('right-label').textContent = s.right;
+  const lo = document.getElementById('left-op-label');
+  const ro = document.getElementById('right-op-label');
+  const la = document.getElementById('left-arrow');
+  const ra = document.getElementById('right-arrow');
+  lo.textContent = s.leftOp; lo.setAttribute('opacity', s.leftOp ? '1' : '0');
+  ro.textContent = s.rightOp; ro.setAttribute('opacity', s.rightOp ? '1' : '0');
+  la.setAttribute('opacity', s.leftOp ? '0.9' : '0');
+  ra.setAttribute('opacity', s.rightOp ? '0.9' : '0');
+  document.getElementById('beam-eq-display').textContent = s.eq;
+}
+
+function advanceStep() {
+  const ex = examples[currentExIdx];
+  if (currentStepIdx >= ex.steps.length - 1) return;
+  const s = ex.steps[currentStepIdx];
+  appendStep(s, currentStepIdx);
+  currentStepIdx++;
+  renderBeamStep();
+  if (currentStepIdx === ex.steps.length - 1) {
+    appendStep(ex.steps[currentStepIdx], currentStepIdx);
+    document.getElementById('next-step-btn').disabled = true;
+  }
+}
+
+function appendStep(s, i) {
+  const list = document.getElementById('steps-list');
+  const div = document.createElement('div');
+  div.className = 'step-item';
+  div.innerHTML = `
+    <div class="step-num-badge">${s.num}</div>
+    <div class="step-content">
+      <div class="step-eq-line">${s.eq.replace(s.leftOp, '<span class="inv">'+s.leftOp+'</span>').replace(s.rightOp,'<span class="inv">'+s.rightOp+'</span>')}</div>
+      <div style="font-family:var(--font-display);font-size:14px;font-weight:800;color:var(--navy);margin-bottom:2px">${s.title}</div>
+      <div class="step-desc">${s.desc}</div>
+    </div>`;
+  list.appendChild(div);
+  setTimeout(() => div.classList.add('visible'), 50);
+}
+
+function resetExample() {
+  currentStepIdx = 0;
+  renderBeamStep();
+  document.getElementById('steps-list').innerHTML = '';
+  document.getElementById('next-step-btn').disabled = false;
+}
+
+// ── PRACTICE ──────────────────────────────────
+let score = 0;
+let answered = {};
+
+function checkPrac(num, correct) {
+  if (answered[num]) return;
+  const val = parseInt(document.getElementById('pi' + num).value);
+  const fb = document.getElementById('pf' + num);
+  const inp = document.getElementById('pi' + num);
+  const card = document.getElementById('pc' + num);
+  if (isNaN(val)) {
+    fb.textContent = 'Enter a number first!';
+    fb.className = 'prac-feedback wrong';
+    return;
+  }
+  if (val === correct) {
+    fb.textContent = `✅ Correct! X = ${correct}`;
+    fb.className = 'prac-feedback correct';
+    inp.classList.add('correct');
+    document.getElementById('cb' + num).disabled = true;
+    card.classList.add('solved');
+    answered[num] = true;
+    score++;
+    updateScore();
+    if (score === 6) setTimeout(celebrate, 400);
+  } else {
+    fb.textContent = `❌ Not quite — try again!`;
+    fb.className = 'prac-feedback wrong';
+    inp.classList.add('wrong');
+    setTimeout(() => inp.classList.remove('wrong'), 600);
+    inp.value = '';
+    inp.focus();
+  }
+}
+
+function updateScore() {
+  document.getElementById('score-count').textContent = score + ' / 6';
+  for (let i = 1; i <= score; i++) {
+    const star = document.getElementById('star' + i);
+    if (star && !star.classList.contains('earned')) {
+      star.classList.add('earned');
+    }
+  }
+}
+
+function toggleHint() {
+  const box = document.getElementById('hint-box');
+  box.classList.toggle('open');
+}
+
+function revealWordEq() {
+  document.getElementById('word-eq-btn').style.display = 'none';
+  document.getElementById('word-eq-section').classList.add('show');
+}
+
+// ── VERIFY ────────────────────────────────────
+function verifyAnswer() {
+  const sel = document.getElementById('verify-eq-sel').value;
+  const xRaw = parseFloat(document.getElementById('verify-x-val').value);
+  if (isNaN(xRaw)) {
+    document.getElementById('verify-result').textContent = 'Enter a value for X first!';
+    document.getElementById('verify-result').className = 'verify-result-big fail';
+    document.getElementById('verify-working').classList.add('show');
+    return;
+  }
+  let left, right, eqStr;
+  switch(sel) {
+    case 'mult': left = 4 * xRaw; right = 28; eqStr = `4 × ${xRaw} = ${left}`; break;
+    case 'mult2': left = xRaw * 6; right = 42; eqStr = `${xRaw} × 6 = ${left}`; break;
+    case 'div1': left = 50 / xRaw; right = 10; eqStr = `50 ÷ ${xRaw} = ${left}`; break;
+    case 'div2': left = xRaw / 7; right = 9; eqStr = `${xRaw} ÷ 7 = ${left}`; break;
+    case 'two': left = 2 * xRaw + 5; right = 15; eqStr = `2 × ${xRaw} + 5 = ${2*xRaw} + 5 = ${left}`; break;
+    case 'baker': left = xRaw / 8; right = 6; eqStr = `${xRaw} ÷ 8 = ${left}`; break;
+  }
+  const ok = Math.abs(left - right) < 0.001;
+  document.getElementById('verify-working').classList.add('show');
+  document.getElementById('verify-line1').textContent = `Substituting X = ${xRaw}:`;
+  document.getElementById('verify-line2').textContent = eqStr + ` (right side = ${right})`;
+  const res = document.getElementById('verify-result');
+  if (ok) {
+    res.textContent = `✅ Both sides equal ${right}! X = ${xRaw} is correct!`;
+    res.className = 'verify-result-big ok';
+  } else {
+    res.textContent = `❌ Left side = ${left}, right side = ${right}. Not equal — check your inverse step.`;
+    res.className = 'verify-result-big fail';
+  }
+}
+
+// ── CONFETTI CELEBRATE ────────────────────────
+function celebrate() {
+  const colors = ['#6C5CE7','#00b894','#fdcb6e','#fd79a8','#e17055','#a29bfe'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.top = '-10px';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.width = (6 + Math.random() * 8) + 'px';
+    el.style.height = (6 + Math.random() * 8) + 'px';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    el.style.animationDelay = (Math.random() * 0.8) + 's';
+    el.style.animationDuration = (0.8 + Math.random() * 0.8) + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2000);
+  }
+}
+
+// init
+loadExample(0, document.querySelector('.ex-tab-btn.active'));
+</script>
+</body>
+</html>

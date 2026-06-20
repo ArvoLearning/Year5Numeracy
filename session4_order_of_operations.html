@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 4 — Order of Operations (BEDMAS/PEMDAS)</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700;800;900&family=Raleway+Dots&family=Source+Code+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0d0d1a;
+    --bg2:       #13132a;
+    --bg3:       #1a1a35;
+    --neon-blue: #00d4ff;
+    --neon-pink: #ff2d78;
+    --neon-lime: #a8ff3e;
+    --neon-yel:  #ffe040;
+    --neon-ora:  #ff7c2a;
+    --neon-pur:  #c84bff;
+    --dim:       rgba(255,255,255,0.55);
+    --dimmer:    rgba(255,255,255,0.3);
+    --white:     #ffffff;
+    --radius:    14px;
+    --radius-sm: 8px;
+    --font-head: 'Raleway', sans-serif;
+    --font-mono: 'Source Code Pro', monospace;
+
+    /* BEDMAS colours */
+    --B: #00d4ff;
+    --E: #c84bff;
+    --D: #ff2d78;
+    --M: #ff7c2a;
+    --A: #a8ff3e;
+    --S: #ffe040;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-head);
+    background: var(--bg);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ─────────────────────────────────── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: rgba(13,13,26,0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0,212,255,0.2);
+    padding: 0 28px;
+  }
+  .header-inner {
+    max-width: 1140px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 64px;
+  }
+  .logo-chip {
+    background: var(--neon-blue);
+    color: var(--bg);
+    font-weight: 900;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .header-title {
+    flex: 1;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.2;
+  }
+  .header-title span { color: var(--neon-blue); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .timer-box {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--neon-lime);
+    letter-spacing: 0.06em;
+    background: rgba(168,255,62,0.08);
+    border: 1px solid rgba(168,255,62,0.3);
+    border-radius: var(--radius-sm);
+    padding: 6px 14px;
+    min-width: 80px;
+    text-align: center;
+  }
+  .timer-box.warn { color: var(--neon-yel); border-color: rgba(255,224,64,0.4); background: rgba(255,224,64,0.08); }
+  .timer-box.danger { color: var(--neon-pink); border-color: rgba(255,45,120,0.4); background: rgba(255,45,120,0.08); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .hbtn {
+    font-family: var(--font-head);
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.06);
+    color: var(--dim);
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .hbtn:hover { border-color: var(--neon-blue); color: var(--neon-blue); background: rgba(0,212,255,0.08); }
+
+  /* ── NAV ─────────────────────────────────────── */
+  .nav-bar {
+    position: sticky;
+    top: 64px;
+    z-index: 190;
+    background: rgba(19,19,42,0.97);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .nav-inner {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 0;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .ntab {
+    padding: 14px 22px;
+    font-family: var(--font-head);
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--dimmer);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    white-space: nowrap;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ntab:hover { color: var(--neon-blue); }
+  .ntab.active { color: var(--neon-blue); border-bottom-color: var(--neon-blue); }
+  .ntab.done { color: var(--neon-lime); }
+  .ntab.done.active { color: var(--neon-blue); border-bottom-color: var(--neon-blue); }
+  .ntab-pip { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+
+  /* ── LAYOUT ──────────────────────────────────── */
+  .main {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 32px 28px 80px;
+    position: relative;
+    z-index: 1;
+  }
+  .sec { display: none; animation: fadeUp 0.35s ease; }
+  .sec.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
+
+  .sec-eyebrow {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 4px;
+  }
+  .sec-eyebrow.blue  { color: var(--neon-blue);  background: rgba(0,212,255,0.1);  border: 1px solid rgba(0,212,255,0.25); }
+  .sec-eyebrow.pink  { color: var(--neon-pink);  background: rgba(255,45,120,0.1);  border: 1px solid rgba(255,45,120,0.25); }
+  .sec-eyebrow.lime  { color: var(--neon-lime);  background: rgba(168,255,62,0.08); border: 1px solid rgba(168,255,62,0.25); }
+  .sec-eyebrow.yel   { color: var(--neon-yel);   background: rgba(255,224,64,0.08); border: 1px solid rgba(255,224,64,0.25); }
+  .sec-eyebrow.pur   { color: var(--neon-pur);   background: rgba(200,75,255,0.1);  border: 1px solid rgba(200,75,255,0.25); }
+  .sec-title {
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 6px;
+    color: var(--white);
+  }
+  .sec-sub { font-size: 15px; color: var(--dim); line-height: 1.6; margin-bottom: 28px; }
+
+  /* ── CARDS ───────────────────────────────────── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .card.glow-blue  { border-color: rgba(0,212,255,0.25);   box-shadow: 0 0 24px rgba(0,212,255,0.06); }
+  .card.glow-pink  { border-color: rgba(255,45,120,0.25);  box-shadow: 0 0 24px rgba(255,45,120,0.06); }
+  .card.glow-lime  { border-color: rgba(168,255,62,0.25);  box-shadow: 0 0 24px rgba(168,255,62,0.06); }
+  .card.glow-yel   { border-color: rgba(255,224,64,0.25);  box-shadow: 0 0 24px rgba(255,224,64,0.06); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ── WARM-UP ─────────────────────────────────── */
+  .big-eq-board {
+    background: #0a1628;
+    border: 2px solid rgba(0,212,255,0.3);
+    border-radius: var(--radius);
+    padding: 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .big-eq-board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(0,212,255,0.06) 0%, transparent 70%);
+  }
+  .big-eq-text {
+    font-family: var(--font-mono);
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--white);
+    position: relative;
+    letter-spacing: 0.04em;
+  }
+  .poll-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .poll-btn {
+    flex: 1;
+    padding: 18px;
+    border-radius: var(--radius);
+    border: 2px solid rgba(255,255,255,0.1);
+    background: var(--bg3);
+    color: var(--white);
+    font-family: var(--font-head);
+    font-size: 28px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .poll-btn:hover { transform: translateY(-3px); }
+  .poll-btn.ans-21 { border-color: var(--neon-pink); }
+  .poll-btn.ans-21:hover { background: rgba(255,45,120,0.12); box-shadow: 0 6px 30px rgba(255,45,120,0.2); }
+  .poll-btn.ans-11 { border-color: var(--neon-lime); }
+  .poll-btn.ans-11:hover { background: rgba(168,255,62,0.12); box-shadow: 0 6px 30px rgba(168,255,62,0.2); }
+  .poll-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; margin-top: 4px; opacity: 0.6; text-transform: uppercase; }
+  .reveal-wrap { display: none; }
+  .reveal-wrap.show { display: block; animation: fadeUp 0.4s ease; }
+  .reveal-card {
+    background: linear-gradient(135deg, rgba(168,255,62,0.1), rgba(0,212,255,0.08));
+    border: 1px solid rgba(168,255,62,0.3);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+  .reveal-card h3 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--neon-lime);
+    margin-bottom: 8px;
+  }
+  .reveal-card p { font-size: 14px; color: var(--dim); line-height: 1.7; }
+  .reveal-card strong { color: var(--white); }
+  .show-reveal-btn {
+    width: 100%;
+    padding: 14px;
+    background: rgba(168,255,62,0.1);
+    border: 1px solid rgba(168,255,62,0.4);
+    border-radius: var(--radius-sm);
+    color: var(--neon-lime);
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.18s;
+    margin-top: 14px;
+    letter-spacing: 0.04em;
+  }
+  .show-reveal-btn:hover { background: rgba(168,255,62,0.18); }
+  .show-reveal-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* ── BEDMAS LADDER ───────────────────────────── */
+  .bedmas-ladder {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .bedmas-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--bg2);
+    transition: all 0.25s;
+    cursor: default;
+  }
+  .bedmas-row:hover { transform: translateX(6px); border-color: var(--row-color, rgba(255,255,255,0.2)); }
+  .bedmas-letter {
+    font-family: var(--font-mono);
+    font-size: 30px;
+    font-weight: 700;
+    min-width: 36px;
+    text-align: center;
+  }
+  .bedmas-name { font-size: 15px; font-weight: 800; color: var(--white); }
+  .bedmas-desc { font-size: 13px; color: var(--dim); margin-top: 2px; }
+  .bedmas-badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .lr-note {
+    background: rgba(255,224,64,0.1);
+    border: 1px solid rgba(255,224,64,0.3);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--neon-yel);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ── STEP SOLVER ─────────────────────────────── */
+  .example-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .ex-pill {
+    padding: 8px 16px;
+    border-radius: 99px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: var(--bg3);
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .ex-pill.active {
+    background: rgba(0,212,255,0.12);
+    border-color: var(--neon-blue);
+    color: var(--neon-blue);
+  }
+  .ex-pill:hover:not(.active) { border-color: rgba(255,255,255,0.3); color: var(--white); }
+
+  .solver-stage {
+    background: #060612;
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+    min-height: 100px;
+    position: relative;
+    overflow: hidden;
+  }
+  .solver-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(0,212,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .current-eq {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--white);
+    text-align: center;
+    line-height: 1.4;
+    min-height: 44px;
+    transition: all 0.3s;
+  }
+  .current-eq .hl { border-radius: 4px; padding: 0 4px; animation: hlPop 0.4s ease; }
+  @keyframes hlPop { from { opacity:0; transform: scale(0.85); } to { opacity:1; transform: scale(1); } }
+  .op-label {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    min-height: 18px;
+    opacity: 0.8;
+  }
+  .steps-track {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+    max-height: 280px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,212,255,0.3) transparent;
+  }
+  .step-card {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 16px;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--step-color, var(--neon-blue));
+    opacity: 0;
+    transform: translateX(-12px);
+    transition: all 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
+  }
+  .step-card.in { opacity: 1; transform: none; }
+  .step-num-badge {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 1px solid var(--step-color, var(--neon-blue));
+    color: var(--step-color, var(--neon-blue));
+  }
+  .step-body {}
+  .step-op-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+  .step-eq-text {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+  }
+  .step-desc-text { font-size: 12px; color: var(--dim); margin-top: 2px; }
+
+  .solver-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .nbtn {
+    padding: 11px 24px;
+    border-radius: 8px;
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.04em;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .nbtn-primary {
+    background: var(--neon-blue);
+    color: var(--bg);
+    border: none;
+    box-shadow: 0 4px 18px rgba(0,212,255,0.3);
+  }
+  .nbtn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,212,255,0.45); }
+  .nbtn-primary:disabled { background: rgba(255,255,255,0.12); color: var(--dimmer); box-shadow: none; transform: none; cursor: default; }
+  .nbtn-ghost {
+    background: transparent;
+    color: var(--dim);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .nbtn-ghost:hover { border-color: var(--neon-blue); color: var(--neon-blue); }
+
+  /* ── PRACTICE PUZZLES ────────────────────────── */
+  .puzzle-card {
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 22px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .puzzle-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent, var(--neon-blue));
+  }
+  .puzzle-card.solved { border-color: rgba(168,255,62,0.35); }
+  .puzzle-card.solved::before { background: var(--neon-lime); }
+  .puzzle-eq-big {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 14px;
+    line-height: 1.3;
+  }
+
+  .show-steps-btn {
+    width: 100%;
+    padding: 9px;
+    background: rgba(255,255,255,0.04);
+    border: 1px dashed rgba(255,255,255,0.15);
+    border-radius: var(--radius-sm);
+    color: var(--dim);
+    font-family: var(--font-head);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+  }
+  .show-steps-btn:hover { border-color: var(--neon-blue); color: var(--neon-blue); background: rgba(0,212,255,0.06); }
+  .puzzle-steps-wrap { display: none; margin-bottom: 12px; }
+  .puzzle-steps-wrap.open { display: block; animation: fadeUp 0.3s ease; }
+  .puz-step {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--dim);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .puz-step:last-child { border-bottom: none; }
+  .puz-step-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .puz-ans-row { display: flex; gap: 8px; align-items: center; }
+  .puz-label { font-size: 14px; font-weight: 700; color: var(--dim); white-space: nowrap; }
+  .puz-input {
+    flex: 1;
+    padding: 10px 12px;
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: var(--radius-sm);
+    color: var(--white);
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+    max-width: 100px;
+  }
+  .puz-input:focus { border-color: var(--neon-blue); background: rgba(0,212,255,0.05); }
+  .puz-input.correct { border-color: var(--neon-lime); background: rgba(168,255,62,0.08); color: var(--neon-lime); }
+  .puz-input.wrong { border-color: var(--neon-pink); background: rgba(255,45,120,0.08); }
+  .puz-check-btn {
+    padding: 10px 16px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: var(--radius-sm);
+    color: var(--neon-blue);
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .puz-check-btn:hover { background: rgba(0,212,255,0.18); }
+  .puz-check-btn:disabled { opacity: 0.3; cursor: default; }
+  .puz-feedback {
+    font-family: var(--font-head);
+    font-size: 13px;
+    font-weight: 700;
+    min-height: 20px;
+    margin-top: 8px;
+    text-align: center;
+    border-radius: 4px;
+    padding: 4px 0;
+  }
+  .puz-feedback.ok { color: var(--neon-lime); }
+  .puz-feedback.bad { color: var(--neon-pink); }
+
+  /* Score bar */
+  .score-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg2);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 20px;
+  }
+  .score-title { font-size: 13px; font-weight: 800; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; }
+  .score-pips { display: flex; gap: 6px; }
+  .score-pip {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.12);
+    background: var(--bg3);
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .score-pip.lit {
+    border-color: var(--neon-lime);
+    background: rgba(168,255,62,0.15);
+    box-shadow: 0 0 12px rgba(168,255,62,0.3);
+    animation: pipPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes pipPop { from { transform: scale(0); } to { transform: scale(1); } }
+  .score-text { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--neon-lime); margin-left: auto; }
+
+  /* ── CALCULATOR WRAP-UP ──────────────────────── */
+  .calc-wrap {
+    background: var(--bg2);
+    border: 1px solid rgba(255,224,64,0.2);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .calc-display {
+    background: #060d06;
+    border: 1px solid rgba(168,255,62,0.3);
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--neon-lime);
+    text-align: right;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+    min-height: 62px;
+    position: relative;
+    overflow: hidden;
+  }
+  .calc-expression { font-size: 14px; color: rgba(168,255,62,0.5); display: block; text-align: right; margin-bottom: 4px; }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .calc-key {
+    padding: 14px 8px;
+    border-radius: 8px;
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--white);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.12s;
+    text-align: center;
+    user-select: none;
+  }
+  .calc-key:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
+  .calc-key:active { transform: scale(0.96); }
+  .calc-key.op { color: var(--neon-blue); border-color: rgba(0,212,255,0.25); }
+  .calc-key.eq { background: var(--neon-blue); color: var(--bg); border-color: var(--neon-blue); font-size: 20px; }
+  .calc-key.eq:hover { background: #33ddff; box-shadow: 0 4px 18px rgba(0,212,255,0.4); }
+  .calc-key.clr { color: var(--neon-pink); border-color: rgba(255,45,120,0.25); }
+  .calc-key.brac { color: var(--neon-yel); border-color: rgba(255,224,64,0.25); }
+  .calc-key.span2 { grid-column: span 2; }
+  .calc-note {
+    background: rgba(255,224,64,0.06);
+    border: 1px solid rgba(255,224,64,0.2);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--neon-yel);
+    line-height: 1.6;
+  }
+  .disc-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 16px;
+    background: rgba(255,224,64,0.08);
+    border: 1px solid rgba(255,224,64,0.3);
+    border-radius: var(--radius-sm);
+    color: var(--neon-yel);
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.04em;
+  }
+  .disc-btn:hover { background: rgba(255,224,64,0.15); }
+  .disc-answer {
+    display: none;
+    margin-top: 12px;
+    padding: 16px;
+    background: rgba(168,255,62,0.06);
+    border: 1px solid rgba(168,255,62,0.2);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--dim);
+    line-height: 1.7;
+  }
+  .disc-answer.show { display: block; animation: fadeUp 0.3s ease; }
+  .disc-answer strong { color: var(--neon-lime); }
+
+  /* nav buttons */
+  .sec-nav { display: flex; gap: 10px; justify-content: space-between; margin-top: 28px; }
+
+  /* confetti */
+  .particle {
+    position: fixed;
+    border-radius: 2px;
+    animation: particleFall var(--dur, 1s) ease-in var(--delay, 0s) forwards;
+    pointer-events: none;
+    z-index: 9999;
+  }
+  @keyframes particleFall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh)  rotate(var(--spin, 720deg)); opacity: 0; }
+  }
+
+  /* responsive */
+  @media (max-width: 680px) {
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+    .big-eq-text { font-size: 38px; }
+    .main { padding: 20px 16px 60px; }
+    .header-inner { padding: 0 16px; }
+    .calc-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-chip">Session 4</div>
+    <div class="header-title">Order of Operations &nbsp;<span>BEDMAS / PEMDAS</span></div>
+    <div class="header-right">
+      <div class="timer-box" id="timer-disp">50:00</div>
+      <button class="hbtn" id="timer-toggle-btn" onclick="toggleTimer()">▶ Start</button>
+      <button class="hbtn" onclick="resetTimer()">↺ Reset</button>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <button class="ntab active" id="ntab-warmup"   onclick="goSec('warmup',this)">  <span class="ntab-pip"></span> 🔥 Warm-up <span style="opacity:.45;font-size:10px">5 min</span></button>
+    <button class="ntab"        id="ntab-intro"    onclick="goSec('intro',this)">   <span class="ntab-pip"></span> 📋 BEDMAS Rules <span style="opacity:.45;font-size:10px">10 min</span></button>
+    <button class="ntab"        id="ntab-deepdive" onclick="goSec('deepdive',this)"><span class="ntab-pip"></span> 🔢 Step Solver <span style="opacity:.45;font-size:10px">15 min</span></button>
+    <button class="ntab"        id="ntab-practice" onclick="goSec('practice',this)"><span class="ntab-pip"></span> 🧩 Puzzles <span style="opacity:.45;font-size:10px">15 min</span></button>
+    <button class="ntab"        id="ntab-wrapup"   onclick="goSec('wrapup',this)">  <span class="ntab-pip"></span> 🧮 Calculator <span style="opacity:.45;font-size:10px">5 min</span></button>
+  </div>
+</nav>
+
+<main class="main">
+
+<!-- ══════════ WARM-UP ══════════ -->
+<section class="sec active" id="sec-warmup">
+  <div class="sec-eyebrow blue">🔥 Warm-up · 5 minutes</div>
+  <div class="sec-title">What's the answer?</div>
+  <div class="sec-sub">Look at the equation on the board. What do you think the answer is? Pick your answer!</div>
+
+  <div class="big-eq-board">
+    <div class="big-eq-text">5 + 2 × 3 = ?</div>
+  </div>
+
+  <div class="poll-row">
+    <button class="poll-btn ans-21" onclick="pickPoll(this, 21)">
+      21
+      <div class="poll-label">5+2=7, then 7×3</div>
+    </button>
+    <button class="poll-btn ans-11" onclick="pickPoll(this, 11)">
+      11
+      <div class="poll-label">2×3=6, then 5+6</div>
+    </button>
+  </div>
+
+  <div class="reveal-wrap" id="poll-reveal">
+    <div class="reveal-card">
+      <h3>✅ The correct answer is 11!</h3>
+      <p>
+        Both answers seem reasonable — which is <strong>exactly why maths needs a set of rules!</strong><br><br>
+        If you got <strong style="color:#ff2d78">21</strong>: you added first (left to right). That feels natural, but it's not the rule.<br>
+        If you got <strong style="color:#a8ff3e">11</strong>: you multiplied first. <strong>Multiplication comes before addition</strong> — that's the rule we'll learn today.<br><br>
+        Without an agreed order, everyone gets a different answer. That's why we have <strong>BEDMAS / PEMDAS!</strong>
+      </p>
+    </div>
+  </div>
+
+  <button class="show-reveal-btn" id="wu-reveal-btn" onclick="showWarmupReveal()" style="margin-top:14px">
+    Reveal the answer & discussion 👀
+  </button>
+
+  <div class="sec-nav">
+    <span></span>
+    <button class="nbtn nbtn-primary" onclick="goSec('intro', document.getElementById('ntab-intro'))">Next: BEDMAS Rules →</button>
+  </div>
+</section>
+
+<!-- ══════════ INTRODUCTION ══════════ -->
+<section class="sec" id="sec-intro">
+  <div class="sec-eyebrow pink">📋 Introduction · 10 minutes</div>
+  <div class="sec-title">The Rules of the Game</div>
+  <div class="sec-sub">BEDMAS (or PEMDAS) is the agreed order everyone follows so maths always has one correct answer.</div>
+
+  <div class="bedmas-ladder">
+
+    <div class="bedmas-row" style="--row-color: var(--B)">
+      <div class="bedmas-letter" style="color:var(--B)">B</div>
+      <div>
+        <div class="bedmas-name">Brackets / Parentheses</div>
+        <div class="bedmas-desc">Solve everything inside ( ) first — always.</div>
+      </div>
+      <div class="bedmas-badge" style="background:rgba(0,212,255,0.1);color:var(--B);border:1px solid rgba(0,212,255,0.3)">First</div>
+    </div>
+
+    <div class="bedmas-row" style="--row-color: var(--E)">
+      <div class="bedmas-letter" style="color:var(--E)">E</div>
+      <div>
+        <div class="bedmas-name">Exponents / Orders</div>
+        <div class="bedmas-desc">Powers and square roots, e.g. 2³ = 8.</div>
+      </div>
+      <div class="bedmas-badge" style="background:rgba(200,75,255,0.1);color:var(--E);border:1px solid rgba(200,75,255,0.3)">Second</div>
+    </div>
+
+    <div class="bedmas-row" style="--row-color: var(--D)">
+      <div class="bedmas-letter" style="color:var(--D)">D</div>
+      <div>
+        <div class="bedmas-name">Division</div>
+        <div class="bedmas-desc">÷ — done left to right alongside multiplication.</div>
+      </div>
+      <div class="bedmas-badge" style="background:rgba(255,45,120,0.1);color:var(--D);border:1px solid rgba(255,45,120,0.3)">Third ←→</div>
+    </div>
+
+    <div class="bedmas-row" style="--row-color: var(--M)">
+      <div class="bedmas-letter" style="color:var(--M)">M</div>
+      <div>
+        <div class="bedmas-name">Multiplication</div>
+        <div class="bedmas-desc">× — done left to right alongside division.</div>
+      </div>
+      <div class="bedmas-badge" style="background:rgba(255,124,42,0.1);color:var(--M);border:1px solid rgba(255,124,42,0.3)">Third ←→</div>
+    </div>
+
+    <div class="bedmas-row" style="--row-color: var(--A)">
+      <div class="bedmas-letter" style="color:var(--A)">A</div>
+      <div>
+        <div class="bedmas-name">Addition</div>
+        <div class="bedmas-desc">+ — done left to right alongside subtraction.</div>
+      </div>
+      <div class="bedmas-badge" style="background:rgba(168,255,62,0.08);color:var(--A);border:1px solid rgba(168,255,62,0.3)">Fourth ←→</div>
+    </div>
+
+    <div class="bedmas-row" style="--row-color: var(--S)">
+      <div class="bedmas-letter" style="color:var(--S)">S</div>
+      <div>
+        <div class="bedmas-name">Subtraction</div>
+        <div class="bedmas-desc">− — done left to right alongside addition.</div>
+      </div>
+      <div class="bedmas-badge" style="background:rgba(255,224,64,0.08);color:var(--S);border:1px solid rgba(255,224,64,0.3)">Fourth ←→</div>
+    </div>
+
+  </div>
+
+  <div class="lr-note">
+    <span style="font-size:20px">↔</span>
+    <div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:2px">Left-to-right rule for equal-priority operations</div>
+      <div style="font-size:12px;font-weight:400;opacity:0.8">Division &amp; Multiplication have equal priority — work left to right. Same rule applies to Addition &amp; Subtraction. Example: <span style="font-family:var(--font-mono)">10 − 3 + 2 = 7 + 2 = 9</span> (NOT 10 − 5 = 5)</div>
+    </div>
+  </div>
+
+  <div class="sec-nav">
+    <button class="nbtn nbtn-ghost" onclick="goSec('warmup', document.getElementById('ntab-warmup'))">← Back</button>
+    <button class="nbtn nbtn-primary" onclick="goSec('deepdive', document.getElementById('ntab-deepdive'))">Next: Step Solver →</button>
+  </div>
+</section>
+
+<!-- ══════════ DEEP DIVE ══════════ -->
+<section class="sec" id="sec-deepdive">
+  <div class="sec-eyebrow lime">🔢 Deep Dive · 15 minutes</div>
+  <div class="sec-title">Step-by-Step Solver</div>
+  <div class="sec-sub">Choose an example. Press <strong style="color:var(--neon-blue)">Next Step</strong> to walk through each operation in BEDMAS order.</div>
+
+  <div class="example-pills" id="ex-pills">
+    <button class="ex-pill active" onclick="loadEx(0,this)">Ex 1: 5 + 2 × 3</button>
+    <button class="ex-pill"        onclick="loadEx(1,this)">Ex 2: (5+2) × 3</button>
+    <button class="ex-pill"        onclick="loadEx(2,this)">Ex 3: 10 − 4 ÷ 2 + 7</button>
+    <button class="ex-pill"        onclick="loadEx(3,this)">Ex 4: 2×(8−3) + 12÷4</button>
+  </div>
+
+  <div class="solver-stage">
+    <div class="op-label" id="op-label">Choose an example above to start</div>
+    <div class="current-eq" id="current-eq">—</div>
+  </div>
+
+  <div class="steps-track" id="steps-track"></div>
+
+  <div class="solver-btns">
+    <button class="nbtn nbtn-primary" id="next-step-btn" onclick="nextStep()" disabled>Next Step →</button>
+    <button class="nbtn nbtn-ghost" onclick="resetEx()">↺ Restart example</button>
+  </div>
+
+  <div class="sec-nav">
+    <button class="nbtn nbtn-ghost" onclick="goSec('intro', document.getElementById('ntab-intro'))">← Back</button>
+    <button class="nbtn nbtn-primary" onclick="goSec('practice', document.getElementById('ntab-practice'))">Next: Puzzles →</button>
+  </div>
+</section>
+
+<!-- ══════════ PRACTICE ══════════ -->
+<section class="sec" id="sec-practice">
+  <div class="sec-eyebrow yel">🧩 Practice · 15 minutes</div>
+  <div class="sec-title">Order of Operations Puzzles</div>
+  <div class="sec-sub">Solve each equation step by step. Click <strong style="color:var(--neon-blue)">Show steps</strong> for a walkthrough hint, then enter your answer.</div>
+
+  <div class="score-strip">
+    <div class="score-title">Score</div>
+    <div class="score-pips">
+      <div class="score-pip" id="pp1">?</div>
+      <div class="score-pip" id="pp2">?</div>
+      <div class="score-pip" id="pp3">?</div>
+      <div class="score-pip" id="pp4">?</div>
+    </div>
+    <div class="score-text" id="score-txt">0 / 4</div>
+  </div>
+
+  <div class="grid2">
+
+    <!-- Puzzle 1: 12 ÷ (2+4) × 5 = 10 -->
+    <div class="puzzle-card" id="pcard1" style="--accent:var(--neon-blue)">
+      <div class="puzzle-eq-big">12 ÷ (2 + 4) × 5</div>
+      <button class="show-steps-btn" onclick="togglePuzSteps(1)">▸ Show step-by-step</button>
+      <div class="puzzle-steps-wrap" id="puz-steps1">
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--B)"></span><span><span style="color:var(--B);font-weight:700">B:</span> (2+4) = 6 → 12 ÷ 6 × 5</span></div>
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--D)"></span><span><span style="color:var(--D);font-weight:700">D:</span> 12 ÷ 6 = 2 → 2 × 5</span></div>
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--M)"></span><span><span style="color:var(--M);font-weight:700">M:</span> 2 × 5 = 10 ✓</span></div>
+      </div>
+      <div class="puz-ans-row">
+        <span class="puz-label">Answer =</span>
+        <input class="puz-input" type="number" id="puz1" placeholder="?" onkeydown="if(event.key==='Enter')checkPuz(1,10)">
+        <button class="puz-check-btn" id="pcb1" onclick="checkPuz(1,10)">Check ✓</button>
+      </div>
+      <div class="puz-feedback" id="pfb1"></div>
+    </div>
+
+    <!-- Puzzle 2: 7×8 − (15+2) + 1 = 40 -->
+    <div class="puzzle-card" id="pcard2" style="--accent:var(--neon-pink)">
+      <div class="puzzle-eq-big">7 × 8 − (15 + 2) + 1</div>
+      <button class="show-steps-btn" onclick="togglePuzSteps(2)">▸ Show step-by-step</button>
+      <div class="puzzle-steps-wrap" id="puz-steps2">
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--B)"></span><span><span style="color:var(--B);font-weight:700">B:</span> (15+2) = 17 → 7×8 − 17 + 1</span></div>
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--M)"></span><span><span style="color:var(--M);font-weight:700">M:</span> 7×8 = 56 → 56 − 17 + 1</span></div>
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--A)"></span><span><span style="color:var(--A);font-weight:700">A/S (L→R):</span> 56−17 = 39 → 39+1 = 40 ✓</span></div>
+      </div>
+      <div class="puz-ans-row">
+        <span class="puz-label">Answer =</span>
+        <input class="puz-input" type="number" id="puz2" placeholder="?" onkeydown="if(event.key==='Enter')checkPuz(2,40)">
+        <button class="puz-check-btn" id="pcb2" onclick="checkPuz(2,40)">Check ✓</button>
+      </div>
+      <div class="puz-feedback" id="pfb2"></div>
+    </div>
+
+    <!-- Puzzle 3: 25 − 3×6 + 10÷2 = 12 -->
+    <div class="puzzle-card" id="pcard3" style="--accent:var(--neon-lime)">
+      <div class="puzzle-eq-big">25 − 3 × 6 + 10 ÷ 2</div>
+      <button class="show-steps-btn" onclick="togglePuzSteps(3)">▸ Show step-by-step</button>
+      <div class="puzzle-steps-wrap" id="puz-steps3">
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--M)"></span><span><span style="color:var(--M);font-weight:700">M:</span> 3×6 = 18 → 25 − 18 + 10÷2</span></div>
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--D)"></span><span><span style="color:var(--D);font-weight:700">D:</span> 10÷2 = 5 → 25 − 18 + 5</span></div>
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--A)"></span><span><span style="color:var(--A);font-weight:700">A/S (L→R):</span> 25−18 = 7 → 7+5 = 12 ✓</span></div>
+      </div>
+      <div class="puz-ans-row">
+        <span class="puz-label">Answer =</span>
+        <input class="puz-input" type="number" id="puz3" placeholder="?" onkeydown="if(event.key==='Enter')checkPuz(3,12)">
+        <button class="puz-check-btn" id="pcb3" onclick="checkPuz(3,12)">Check ✓</button>
+      </div>
+      <div class="puz-feedback" id="pfb3"></div>
+    </div>
+
+    <!-- Puzzle 4: 4×(10 − 2×3) = 16 -->
+    <div class="puzzle-card" id="pcard4" style="--accent:var(--neon-yel)">
+      <div class="puzzle-eq-big">4 × (10 − 2 × 3)</div>
+      <button class="show-steps-btn" onclick="togglePuzSteps(4)">▸ Show step-by-step</button>
+      <div class="puzzle-steps-wrap" id="puz-steps4">
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--B)"></span><span><span style="color:var(--B);font-weight:700">B — inside first:</span> 2×3 = 6 → (10−6) → 4</span></div>
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--B)"></span><span><span style="color:var(--B);font-weight:700">B — finish bracket:</span> 4×(4)</span></div>
+        <div class="puz-step"><span class="puz-step-dot" style="background:var(--M)"></span><span><span style="color:var(--M);font-weight:700">M:</span> 4×4 = 16 ✓</span></div>
+      </div>
+      <div class="puz-ans-row">
+        <span class="puz-label">Answer =</span>
+        <input class="puz-input" type="number" id="puz4" placeholder="?" onkeydown="if(event.key==='Enter')checkPuz(4,16)">
+        <button class="puz-check-btn" id="pcb4" onclick="checkPuz(4,16)">Check ✓</button>
+      </div>
+      <div class="puz-feedback" id="pfb4"></div>
+    </div>
+
+  </div>
+
+  <div class="sec-nav">
+    <button class="nbtn nbtn-ghost" onclick="goSec('deepdive', document.getElementById('ntab-deepdive'))">← Back</button>
+    <button class="nbtn nbtn-primary" onclick="goSec('wrapup', document.getElementById('ntab-wrapup'))">Next: Calculator →</button>
+  </div>
+</section>
+
+<!-- ══════════ WRAP-UP ══════════ -->
+<section class="sec" id="sec-wrapup">
+  <div class="sec-eyebrow pur">🧮 Wrap-up · 5 minutes</div>
+  <div class="sec-title">Calculator Verification</div>
+  <div class="sec-sub">Use the calculator below. Notice it always gives the <strong style="color:var(--neon-lime)">correct</strong> BEDMAS answer — even without you pressing = between each step. Why?</div>
+
+  <div class="grid2" style="gap:20px; margin-bottom:20px; align-items: start;">
+    <!-- Calculator -->
+    <div class="calc-wrap">
+      <div class="calc-display">
+        <span class="calc-expression" id="calc-expr">&nbsp;</span>
+        <span id="calc-disp">0</span>
+      </div>
+      <div class="calc-grid">
+        <button class="calc-key clr span2" onclick="calcClear()">C Clear</button>
+        <button class="calc-key brac" onclick="calcKey('(')">(</button>
+        <button class="calc-key brac" onclick="calcKey(')')">)</button>
+
+        <button class="calc-key" onclick="calcKey('7')">7</button>
+        <button class="calc-key" onclick="calcKey('8')">8</button>
+        <button class="calc-key" onclick="calcKey('9')">9</button>
+        <button class="calc-key op" onclick="calcKey('×')">×</button>
+
+        <button class="calc-key" onclick="calcKey('4')">4</button>
+        <button class="calc-key" onclick="calcKey('5')">5</button>
+        <button class="calc-key" onclick="calcKey('6')">6</button>
+        <button class="calc-key op" onclick="calcKey('÷')">÷</button>
+
+        <button class="calc-key" onclick="calcKey('1')">1</button>
+        <button class="calc-key" onclick="calcKey('2')">2</button>
+        <button class="calc-key" onclick="calcKey('3')">3</button>
+        <button class="calc-key op" onclick="calcKey('+')">+</button>
+
+        <button class="calc-key" onclick="calcKey('0')">0</button>
+        <button class="calc-key" onclick="calcBackspace()">⌫</button>
+        <button class="calc-key op" onclick="calcKey('-')">−</button>
+        <button class="calc-key eq" onclick="calcEquals()">=</button>
+      </div>
+      <div class="calc-note">
+        💡 Try typing <strong>5 + 2 × 3</strong> and pressing =. You'll get 11, not 21 — because the calculator follows BEDMAS automatically.
+      </div>
+    </div>
+
+    <!-- Discussion -->
+    <div>
+      <div class="card glow-yel" style="margin-bottom:16px">
+        <div style="font-size:13px;font-weight:800;color:var(--neon-yel);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">💬 Discussion Question</div>
+        <div style="font-size:15px;color:var(--white);line-height:1.7;margin-bottom:16px">
+          Why do you think a calculator can always give the correct answer to <span style="font-family:var(--font-mono);color:var(--neon-blue)">5 + 2 × 3</span> without needing you to press = in between each step?
+        </div>
+        <button class="disc-btn" id="disc-btn" onclick="showDiscAnswer()">Reveal the answer 🤔</button>
+        <div class="disc-answer" id="disc-answer">
+          <strong>It's programmed to follow BEDMAS!</strong><br><br>
+          Calculators are built with BEDMAS rules hard-coded into their logic. When you type an expression and press =, the calculator doesn't just read left-to-right — it first scans for brackets, then exponents, then × and ÷, and finally + and −.<br><br>
+          This is the <strong>same reason programming languages like Python, JavaScript, and Scratch all follow BEDMAS</strong> — so computers and humans always agree on one correct answer.
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(168,255,62,0.2)">
+        <div style="font-size:13px;font-weight:800;color:var(--neon-lime);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📚 Session Summary</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--dim)">
+            <span style="color:var(--B);font-family:var(--font-mono);font-weight:700;min-width:18px">B</span>
+            <span>Brackets first — always solve inside ( ) before anything else</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--dim)">
+            <span style="color:var(--E);font-family:var(--font-mono);font-weight:700;min-width:18px">E</span>
+            <span>Exponents / powers come second</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--dim)">
+            <span style="color:var(--D);font-family:var(--font-mono);font-weight:700;min-width:18px">DM</span>
+            <span>Division &amp; Multiplication — equal priority, left to right</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--dim)">
+            <span style="color:var(--A);font-family:var(--font-mono);font-weight:700;min-width:18px">AS</span>
+            <span>Addition &amp; Subtraction — equal priority, left to right</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:8px">
+    <button class="nbtn nbtn-primary" onclick="celebrate()" style="font-size:15px;padding:14px 40px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-pur))">
+      🎉 Complete Session 4!
+    </button>
+  </div>
+
+  <div class="sec-nav">
+    <button class="nbtn nbtn-ghost" onclick="goSec('practice', document.getElementById('ntab-practice'))">← Back</button>
+    <span></span>
+  </div>
+</section>
+
+</main>
+
+<script>
+/* ── TIMER ───────────────────────────────────── */
+let timerSec = 50*60, timerOn = false, timerInt = null;
+function toggleTimer(){
+  timerOn = !timerOn;
+  const btn = document.getElementById('timer-toggle-btn');
+  if(timerOn){
+    btn.textContent = '⏸ Pause';
+    timerInt = setInterval(()=>{
+      if(timerSec>0){ timerSec--; updateTimerUI(); }
+      else{ clearInterval(timerInt); timerOn=false; btn.textContent='▶ Start'; }
+    },1000);
+  } else {
+    clearInterval(timerInt);
+    btn.textContent = '▶ Resume';
+  }
+}
+function resetTimer(){
+  clearInterval(timerInt); timerOn=false; timerSec=50*60;
+  document.getElementById('timer-toggle-btn').textContent='▶ Start';
+  updateTimerUI();
+}
+function updateTimerUI(){
+  const m=Math.floor(timerSec/60).toString().padStart(2,'0');
+  const s=(timerSec%60).toString().padStart(2,'0');
+  const el=document.getElementById('timer-disp');
+  el.textContent=m+':'+s;
+  el.className='timer-box'+(timerSec<600?' warn':'')+(timerSec<120?' danger':'');
+}
+
+/* ── NAV ─────────────────────────────────────── */
+const visited = new Set();
+function goSec(id, tabEl){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  tabEl.classList.add('active');
+  visited.add(id);
+  document.querySelectorAll('.ntab').forEach(t=>{
+    const tid = t.id.replace('ntab-','');
+    if(visited.has(tid)) t.classList.add('done');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── WARM-UP ─────────────────────────────────── */
+let pollPicked = false;
+function pickPoll(btn, val){
+  if(pollPicked) return;
+  pollPicked=true;
+  if(val===11){
+    btn.style.background='rgba(168,255,62,0.15)';
+    btn.style.borderColor='var(--neon-lime)';
+    btn.style.boxShadow='0 0 30px rgba(168,255,62,0.3)';
+  } else {
+    btn.style.background='rgba(255,45,120,0.12)';
+    btn.style.borderColor='var(--neon-pink)';
+  }
+  showWarmupReveal();
+}
+function showWarmupReveal(){
+  document.getElementById('poll-reveal').classList.add('show');
+  document.getElementById('wu-reveal-btn').disabled=true;
+  document.getElementById('wu-reveal-btn').textContent='✅ Revealed';
+}
+
+/* ── STEP SOLVER DATA ────────────────────────── */
+const COLOR_MAP = {B:['var(--B)','rgba(0,212,255,0.12)'], E:['var(--E)','rgba(200,75,255,0.12)'],
+                   D:['var(--D)','rgba(255,45,120,0.12)'], M:['var(--M)','rgba(255,124,42,0.12)'],
+                   A:['var(--A)','rgba(168,255,62,0.1)'],  S:['var(--S)','rgba(255,224,64,0.1)']};
+
+const EXAMPLES = [
+  {
+    label:'5 + 2 × 3',
+    steps:[
+      {op:'M', opLabel:'M — Multiplication', hl:'2 × 3', eq:'5 + <hl>2 × 3</hl>', next:'5 + 6', desc:'Multiply before adding: 2 × 3 = 6'},
+      {op:'A', opLabel:'A — Addition', hl:'5 + 6', eq:'<hl>5 + 6</hl>', next:'= 11 ✓', desc:'Now add: 5 + 6 = 11'},
+      {op:'A', opLabel:'✅ Answer = 11', hl:'', eq:'= 11 ✓', next:null, desc:''}
+    ]
+  },
+  {
+    label:'(5 + 2) × 3',
+    steps:[
+      {op:'B', opLabel:'B — Brackets', hl:'5 + 2', eq:'(<hl>5 + 2</hl>) × 3', next:'7 × 3', desc:'Brackets first: 5 + 2 = 7'},
+      {op:'M', opLabel:'M — Multiplication', hl:'7 × 3', eq:'<hl>7 × 3</hl>', next:'= 21 ✓', desc:'Multiply: 7 × 3 = 21'},
+      {op:'M', opLabel:'✅ Answer = 21', hl:'', eq:'= 21 ✓', next:null, desc:''}
+    ]
+  },
+  {
+    label:'10 − 4 ÷ 2 + 7',
+    steps:[
+      {op:'D', opLabel:'D — Division', hl:'4 ÷ 2', eq:'10 − <hl>4 ÷ 2</hl> + 7', next:'10 − 2 + 7', desc:'Division before +/−: 4 ÷ 2 = 2'},
+      {op:'S', opLabel:'S — Subtraction (left to right)', hl:'10 − 2', eq:'<hl>10 − 2</hl> + 7', next:'8 + 7', desc:'Left to right: 10 − 2 = 8'},
+      {op:'A', opLabel:'A — Addition', hl:'8 + 7', eq:'<hl>8 + 7</hl>', next:'= 15 ✓', desc:'8 + 7 = 15'},
+      {op:'A', opLabel:'✅ Answer = 15', hl:'', eq:'= 15 ✓', next:null, desc:''}
+    ]
+  },
+  {
+    label:'2×(8−3)+12÷4',
+    steps:[
+      {op:'B', opLabel:'B — Brackets', hl:'8 − 3', eq:'2 × (<hl>8 − 3</hl>) + 12 ÷ 4', next:'2 × 5 + 12 ÷ 4', desc:'Brackets first: 8 − 3 = 5'},
+      {op:'M', opLabel:'M — Multiplication (left to right)', hl:'2 × 5', eq:'<hl>2 × 5</hl> + 12 ÷ 4', next:'10 + 12 ÷ 4', desc:'Left to right: 2 × 5 = 10'},
+      {op:'D', opLabel:'D — Division', hl:'12 ÷ 4', eq:'10 + <hl>12 ÷ 4</hl>', next:'10 + 3', desc:'12 ÷ 4 = 3'},
+      {op:'A', opLabel:'A — Addition', hl:'10 + 3', eq:'<hl>10 + 3</hl>', next:'= 13 ✓', desc:'10 + 3 = 13'},
+      {op:'A', opLabel:'✅ Answer = 13', hl:'', eq:'= 13 ✓', next:null, desc:''}
+    ]
+  }
+];
+
+let curEx = -1, curStepIdx = 0;
+
+function loadEx(idx, btn){
+  document.querySelectorAll('.ex-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  curEx = idx;
+  curStepIdx = 0;
+  document.getElementById('steps-track').innerHTML='';
+  const ex = EXAMPLES[idx];
+  document.getElementById('op-label').textContent = 'Equation: ' + ex.label;
+  document.getElementById('op-label').style.color = 'var(--neon-blue)';
+  renderEq(renderHl(ex.steps[0].eq, ex.steps[0].op));
+  document.getElementById('next-step-btn').disabled = false;
+}
+
+function renderHl(eqStr, op){
+  const [col, bg] = COLOR_MAP[op] || ['var(--white)','rgba(255,255,255,0.1)'];
+  return eqStr.replace(/<hl>/g, `<span class="hl" style="background:${bg};color:${col}">`)
+              .replace(/<\/hl>/g, '</span>');
+}
+
+function renderEq(html){
+  document.getElementById('current-eq').innerHTML = html;
+}
+
+function nextStep(){
+  if(curEx<0) return;
+  const ex = EXAMPLES[curEx];
+  const step = ex.steps[curStepIdx];
+  const [col] = COLOR_MAP[step.op] || ['var(--white)'];
+
+  // append step card
+  const track = document.getElementById('steps-track');
+  const div = document.createElement('div');
+  div.className = 'step-card';
+  div.style.setProperty('--step-color', col);
+  div.innerHTML = `
+    <div class="step-num-badge">${curStepIdx+1}</div>
+    <div class="step-body">
+      <span class="step-op-tag" style="background:${COLOR_MAP[step.op]?.[1]||'rgba(255,255,255,0.08)'};color:${col}">${step.opLabel}</span>
+      <div class="step-eq-text">${step.next||''}</div>
+      <div class="step-desc-text">${step.desc}</div>
+    </div>`;
+  track.appendChild(div);
+  setTimeout(()=>div.classList.add('in'), 40);
+  track.scrollTop = track.scrollHeight;
+
+  curStepIdx++;
+
+  if(curStepIdx < ex.steps.length){
+    const ns = ex.steps[curStepIdx];
+    document.getElementById('op-label').textContent = ns.opLabel;
+    document.getElementById('op-label').style.color = COLOR_MAP[ns.op]?.[0] || 'var(--white)';
+    renderEq(renderHl(ns.eq, ns.op));
+    if(ns.next===null) document.getElementById('next-step-btn').disabled=true;
+  } else {
+    document.getElementById('next-step-btn').disabled=true;
+  }
+}
+
+function resetEx(){
+  if(curEx<0) return;
+  curStepIdx=0;
+  document.getElementById('steps-track').innerHTML='';
+  const ex=EXAMPLES[curEx];
+  document.getElementById('op-label').textContent='Equation: '+ex.label;
+  document.getElementById('op-label').style.color='var(--neon-blue)';
+  renderEq(renderHl(ex.steps[0].eq, ex.steps[0].op));
+  document.getElementById('next-step-btn').disabled=false;
+}
+
+/* ── PRACTICE ────────────────────────────────── */
+let puzScore=0;
+const puzDone={};
+function togglePuzSteps(n){
+  const el=document.getElementById('puz-steps'+n);
+  el.classList.toggle('open');
+  const btn=el.previousElementSibling;
+  btn.textContent = el.classList.contains('open') ? '▾ Hide steps' : '▸ Show step-by-step';
+}
+function checkPuz(n, correct){
+  if(puzDone[n]) return;
+  const inp=document.getElementById('puz'+n);
+  const val=parseInt(inp.value);
+  const fb=document.getElementById('pfb'+n);
+  if(isNaN(val)){fb.textContent='Enter a number!';fb.className='puz-feedback bad';return;}
+  if(val===correct){
+    fb.textContent='✅ Correct! Answer = '+correct;
+    fb.className='puz-feedback ok';
+    inp.classList.add('correct');
+    document.getElementById('pcb'+n).disabled=true;
+    document.getElementById('pcard'+n).classList.add('solved');
+    puzDone[n]=true;
+    puzScore++;
+    document.getElementById('score-txt').textContent=puzScore+' / 4';
+    const pip=document.getElementById('pp'+n);
+    pip.classList.add('lit');
+    pip.textContent='✓';
+    if(puzScore===4) setTimeout(celebrate,400);
+  } else {
+    fb.textContent='❌ Not quite — check your steps!';
+    fb.className='puz-feedback bad';
+    inp.classList.add('wrong');
+    setTimeout(()=>inp.classList.remove('wrong'),600);
+    inp.value=''; inp.focus();
+  }
+}
+
+/* ── CALCULATOR ──────────────────────────────── */
+let calcExpr = '';
+function calcKey(k){
+  calcExpr += k;
+  document.getElementById('calc-expr').textContent = calcExpr;
+  document.getElementById('calc-disp').textContent = calcExpr;
+}
+function calcClear(){
+  calcExpr='';
+  document.getElementById('calc-expr').textContent='\u00a0';
+  document.getElementById('calc-disp').textContent='0';
+}
+function calcBackspace(){
+  calcExpr=calcExpr.slice(0,-1);
+  document.getElementById('calc-expr').textContent=calcExpr||'\u00a0';
+  document.getElementById('calc-disp').textContent=calcExpr||'0';
+}
+function calcEquals(){
+  try{
+    const safe=calcExpr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+    const res=Function('"use strict"; return ('+safe+')')();
+    document.getElementById('calc-expr').textContent=calcExpr+' =';
+    document.getElementById('calc-disp').textContent=parseFloat(res.toFixed(8));
+    calcExpr='';
+  } catch(e){
+    document.getElementById('calc-disp').textContent='Error';
+    calcExpr='';
+  }
+}
+function showDiscAnswer(){
+  document.getElementById('disc-answer').classList.add('show');
+  document.getElementById('disc-btn').disabled=true;
+  document.getElementById('disc-btn').textContent='✅ Answer revealed';
+}
+
+/* ── CONFETTI ─────────────────────────────────── */
+function celebrate(){
+  const cols=['#00d4ff','#ff2d78','#a8ff3e','#ffe040','#c84bff','#ff7c2a'];
+  for(let i=0;i<90;i++){
+    const el=document.createElement('div');
+    el.className='particle';
+    el.style.cssText=`
+      left:${Math.random()*100}vw;
+      top:-12px;
+      width:${6+Math.random()*8}px;
+      height:${6+Math.random()*8}px;
+      background:${cols[Math.floor(Math.random()*cols.length)]};
+      border-radius:${Math.random()>.5?'50%':'2px'};
+      --dur:${0.8+Math.random()*0.9}s;
+      --delay:${Math.random()*0.7}s;
+      --spin:${360+Math.random()*720}deg;
+    `;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 2200);
+  }
+}
+
+// init
+loadEx(0, document.querySelector('.ex-pill.active'));
+</script>
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Session 3 — Extending Patterns with Fractions & Decimals</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #dddbd3;
+    --border2: #c8c5bc;
+    --text: #1a1917;
+    --text2: #5a5750;
+    --text3: #9a9790;
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-dark: #0F6E56;
+    --blue: #378ADD;
+    --blue-light: #E6F1FB;
+    --blue-dark: #185FA5;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --amber-dark: #633806;
+    --green: #639922;
+    --green-light: #EAF3DE;
+    --green-dark: #3B6D11;
+    --red-light: #FCEBEB;
+    --red: #A32D2D;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.07), 0 0 0 0.5px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  }
+
+  .logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--teal);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 16px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .header-title {
+    font-size: 15px; font-weight: 600; color: var(--text);
+    flex: 1; min-width: 160px;
+  }
+  .header-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
+
+  .phase-nav {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .phase-btn {
+    padding: 6px 14px; border-radius: 20px;
+    border: 1.5px solid var(--border2);
+    background: var(--surface);
+    color: var(--text2);
+    font-size: 13px; cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .phase-btn.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .phase-btn:hover:not(.active) { background: var(--surface2); border-color: var(--border2); }
+
+  .progress-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 1.5rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .progress-label { font-size: 12px; color: var(--text3); white-space: nowrap; }
+  .progress-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--teal); border-radius: 2px; transition: width 0.4s ease; }
+
+  main { max-width: 820px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .section-header { margin-bottom: 1.5rem; }
+  .section-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .section-sub { font-size: 14px; color: var(--text2); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 14px; font-weight: 600; color: var(--text);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 4px;
+    font-size: 12px; font-weight: 600;
+  }
+  .badge-blue { background: var(--blue-light); color: var(--blue-dark); }
+  .badge-amber { background: var(--amber-light); color: var(--amber-dark); }
+  .badge-green { background: var(--green-light); color: var(--green-dark); }
+  .badge-teal { background: var(--teal-light); color: var(--teal-dark); }
+
+  /* Warm-up */
+  .qa-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .qa-q { font-size: 15px; min-width: 170px; }
+  .qa-input {
+    border: 1.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 6px 10px; font-size: 15px;
+    width: 80px; background: var(--surface);
+    color: var(--text); text-align: center;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  .qa-input:focus { outline: none; border-color: var(--blue); }
+  .btn-check {
+    padding: 6px 14px; border-radius: var(--radius-sm);
+    border: none; background: var(--teal); color: #fff;
+    font-size: 13px; cursor: pointer; font-weight: 600;
+    font-family: inherit; transition: background 0.15s;
+  }
+  .btn-check:hover { background: var(--teal-dark); }
+  .feedback {
+    font-size: 13px; padding: 4px 10px; border-radius: 4px;
+    font-weight: 600; display: none;
+  }
+  .feedback.correct { background: var(--green-light); color: var(--green-dark); display: inline-block; }
+  .feedback.wrong { background: var(--red-light); color: var(--red); display: inline-block; }
+
+  /* Intro */
+  .concept-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px; background: var(--surface2);
+    border-radius: 8px; margin-bottom: 8px;
+  }
+  .concept-icon { font-size: 24px; flex-shrink: 0; }
+  .concept-label { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .concept-desc { font-size: 13px; color: var(--text2); }
+
+  .intro-ex-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; background: var(--surface2);
+    border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap;
+  }
+  .intro-ex-seq { font-size: 14px; font-weight: 500; flex: 1; min-width: 180px; }
+  .rule-tag { padding: 4px 10px; border-radius: 4px; background: var(--amber-light); color: var(--amber-dark); font-size: 12px; font-weight: 600; }
+
+  /* Patterns */
+  .pattern-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+  .p-box {
+    padding: 8px 12px; border-radius: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    font-size: 15px; font-weight: 600; min-width: 50px; text-align: center;
+  }
+  .p-arrow { color: var(--text3); font-size: 13px; }
+  .p-input {
+    border: 2px dashed var(--blue);
+    border-radius: 8px; padding: 7px 10px;
+    font-size: 15px; width: 72px;
+    background: var(--blue-light); color: var(--text);
+    text-align: center; font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  .p-input:focus { outline: none; border-color: var(--blue-dark); border-style: solid; }
+  .p-submit {
+    padding: 7px 14px; border-radius: var(--radius-sm);
+    border: none; background: var(--blue); color: #fff;
+    font-size: 13px; cursor: pointer; font-weight: 600;
+    font-family: inherit; transition: background 0.15s;
+  }
+  .p-submit:hover { background: var(--blue-dark); }
+  .p-box-filled { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
+
+  /* Whiteboard */
+  .wb-area {
+    width: 100%; border: 2px dashed var(--border2);
+    border-radius: var(--radius); padding: 1rem;
+    font-size: 15px; font-family: inherit;
+    color: var(--text); line-height: 1.7;
+    background: #fafaf8; resize: vertical;
+    transition: border-color 0.15s;
+  }
+  .wb-area:focus { outline: none; border-color: var(--teal); }
+  .wb-label { font-size: 13px; color: var(--teal-dark); font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+
+  /* Practice */
+  .blank-box {
+    width: 60px; height: 36px; border-radius: 8px;
+    background: var(--blue-light); border: 2px dashed var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--blue); font-weight: 600;
+    transition: all 0.2s;
+  }
+  .blank-box.revealed { background: var(--green-light); border: 2px solid var(--green); color: var(--green-dark); }
+
+  .reveal-btn {
+    padding: 7px 16px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--teal); background: var(--surface);
+    color: var(--teal); font-size: 13px; cursor: pointer;
+    font-weight: 600; font-family: inherit; transition: all 0.15s;
+  }
+  .reveal-btn:hover { background: var(--teal-light); }
+
+  .prac-reveal { display: none; margin-top: 14px; }
+  .prac-reveal.open { display: block; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  @media (max-width: 480px) { .info-grid { grid-template-columns: 1fr; } }
+
+  .info-box { padding: 12px; border-radius: 8px; }
+  .info-box-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .info-box-val { font-size: 15px; font-weight: 700; }
+
+  .term-table { width: 100%; border-collapse: collapse; font-size: 13px; overflow-x: auto; display: block; }
+  .term-table th { background: var(--blue-light); color: var(--blue-dark); padding: 7px 10px; border: 1px solid #B5D4F4; font-weight: 700; text-align: center; white-space: nowrap; }
+  .term-table td { padding: 6px 10px; border: 1px solid var(--border); text-align: center; white-space: nowrap; }
+  .term-table td.hi { background: var(--teal-light); color: var(--teal-dark); font-weight: 700; }
+
+  .tenth-callout { margin-top: 10px; padding: 10px 14px; background: var(--amber-light); border-radius: 8px; font-size: 14px; color: var(--amber-dark); font-weight: 600; }
+
+  /* Wrap-up */
+  .connect-q { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 1rem; }
+  .connect-opts { display: flex; flex-direction: column; gap: 8px; }
+  .connect-opt {
+    padding: 12px 16px; border-radius: 8px;
+    border: 1.5px solid var(--border2); background: var(--surface);
+    color: var(--text); font-size: 14px; cursor: pointer;
+    transition: all 0.15s; text-align: left; font-family: inherit;
+  }
+  .connect-opt:hover { border-color: var(--blue); background: var(--blue-light); }
+  .connect-opt.right { background: var(--green-light); border-color: var(--green); color: var(--green-dark); font-weight: 600; }
+  .connect-opt.wrong { background: var(--red-light); border-color: #E24B4A; color: var(--red); }
+  .connect-reveal { display: none; margin-top: 12px; padding: 14px; background: var(--teal-light); border-radius: 8px; font-size: 14px; color: var(--teal-dark); line-height: 1.7; }
+  .connect-reveal.open { display: block; }
+
+  .equiv-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .equiv-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .equiv-table tr:last-child td { border-bottom: none; }
+  .equiv-table td:nth-child(2) { color: var(--text3); text-align: center; }
+  .equiv-table td:nth-child(3) { text-align: right; font-weight: 600; color: var(--blue-dark); }
+
+  .success-banner {
+    background: var(--teal-light); border: 1px solid #9FE1CB;
+    border-radius: var(--radius); padding: 1.25rem;
+    margin-top: 1rem;
+  }
+  .success-banner h3 { font-size: 16px; color: var(--teal-dark); margin-bottom: 6px; }
+  .success-banner p { font-size: 13px; color: #0F6E56; line-height: 1.7; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+
+  .dashed-card { border: 2px dashed var(--teal); }
+  .dashed-card .card-title { color: var(--teal-dark); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">P5</div>
+  <div>
+    <div class="header-title">Session 3 — Fractions &amp; Decimals in Patterns</div>
+    <div class="header-sub">Year 5 · Number Patterns · 50 minutes</div>
+  </div>
+  <nav class="phase-nav">
+    <button class="phase-btn active" onclick="goPhase(0)">🌅 Warm-up</button>
+    <button class="phase-btn" onclick="goPhase(1)">💡 Introduction</button>
+    <button class="phase-btn" onclick="goPhase(2)">🔍 Deep Dive</button>
+    <button class="phase-btn" onclick="goPhase(3)">✏️ Practice</button>
+    <button class="phase-btn" onclick="goPhase(4)">🔗 Wrap-up</button>
+  </nav>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label" id="phase-label">5 min · Warm-up</span>
+  <div class="progress-track"><div class="progress-fill" id="phase-fill" style="width:10%"></div></div>
+  <span class="progress-label" id="phase-time">50 min total</span>
+</div>
+
+<main>
+
+  <!-- ===== WARM UP ===== -->
+  <div class="panel active" id="panel-0">
+    <div class="section-header">
+      <div class="section-title">Warm-up: Decimal &amp; Fraction Arithmetic</div>
+      <div class="section-sub">Let's wake up our number brains! Type your answer and click Check.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge badge-blue">Decimals</span></div>
+      <div id="warmup-dec"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge badge-amber">Fractions</span></div>
+      <div id="warmup-frac"></div>
+    </div>
+  </div>
+
+  <!-- ===== INTRODUCTION ===== -->
+  <div class="panel" id="panel-1">
+    <div class="section-header">
+      <div class="section-title">Introduction: Patterns for Parts of a Whole</div>
+      <div class="section-sub">Patterns aren't just for whole numbers — they work with fractions and decimals too!</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Key ideas</div>
+      <div class="concept-row">
+        <div class="concept-icon">🔢</div>
+        <div><div class="concept-label">Same rules apply</div><div class="concept-desc">Add, subtract, multiply, divide — the pattern rules work exactly the same way with decimals and fractions.</div></div>
+      </div>
+      <div class="concept-row">
+        <div class="concept-icon">🔗</div>
+        <div><div class="concept-label">Fractions = Decimals</div><div class="concept-desc">Counting by ¼ is the same as counting by 0.25. Counting by ½ is the same as counting by 0.5. Two representations, same value.</div></div>
+      </div>
+      <div class="concept-row">
+        <div class="concept-icon">📈</div>
+        <div><div class="concept-label">Two types of patterns</div><div class="concept-desc"><strong>Additive:</strong> add or subtract the same amount each step. &nbsp; <strong>Multiplicative:</strong> multiply or divide by the same number each step.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Quick examples — spot the type!</div>
+      <div id="intro-examples"></div>
+    </div>
+  </div>
+
+  <!-- ===== DEEP DIVE ===== -->
+  <div class="panel" id="panel-2">
+    <div class="section-header">
+      <div class="section-title">Deep Dive: Rational Number Patterns</div>
+      <div class="section-sub">Identify the rule, then type the next term and click Check. Use the whiteboard space for working.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge badge-blue">Decimal patterns</span></div>
+      <div id="decimal-patterns"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge badge-amber">Fraction patterns</span></div>
+      <div id="fraction-patterns"></div>
+    </div>
+    <div class="card dashed-card">
+      <div class="wb-label">✏️ Your whiteboard space</div>
+      <textarea class="wb-area" rows="5" placeholder="Write your working here — identify rules, jot down steps, try the next terms..."></textarea>
+    </div>
+  </div>
+
+  <!-- ===== PRACTICE ===== -->
+  <div class="panel" id="panel-3">
+    <div class="section-header">
+      <div class="section-title">Practice &amp; Application: Mixed Rational Patterns</div>
+      <div class="section-sub">For each pattern: identify the rule, extend by 3 terms, then find the 10th term.</div>
+    </div>
+    <div id="practice-patterns"></div>
+    <div class="card dashed-card">
+      <div class="wb-label">✏️ Working space</div>
+      <textarea class="wb-area" rows="6" placeholder="Show your working here — write the rule, extend the sequence, build a table, find the 10th term..."></textarea>
+    </div>
+  </div>
+
+  <!-- ===== WRAP UP ===== -->
+  <div class="panel" id="panel-4">
+    <div class="section-header">
+      <div class="section-title">Wrap-up: Connecting Rational Patterns</div>
+      <div class="section-sub">Let's connect what we've learned today!</div>
+    </div>
+    <div class="card">
+      <div class="connect-q">What is the relationship between counting by 0.25 and counting by ¼?</div>
+      <div class="connect-opts">
+        <button class="connect-opt" onclick="checkConnect(this, false)">They're different — 0.25 is smaller than ¼</button>
+        <button class="connect-opt" onclick="checkConnect(this, true)">They are the same! Just different representations of the same number</button>
+        <button class="connect-opt" onclick="checkConnect(this, false)">0.25 only works for decimals, ¼ only works for fractions</button>
+      </div>
+      <div class="connect-reveal" id="connect-reveal">
+        ✅ Exactly right! <strong>0.25 = ¼</strong>. They are two ways to write the same number. So counting by 0.25 → 0.25, 0.50, 0.75, 1.00… and counting by ¼ → ¼, ½, ¾, 1… produce identical sequences — just written differently!
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Key equivalences to remember</div>
+        <table class="equiv-table">
+          <tr><td>½</td><td>=</td><td>0.5</td></tr>
+          <tr><td>¼</td><td>=</td><td>0.25</td></tr>
+          <tr><td>¾</td><td>=</td><td>0.75</td></tr>
+          <tr><td>⅕ (1/5)</td><td>=</td><td>0.2</td></tr>
+          <tr><td>1/10</td><td>=</td><td>0.1</td></tr>
+          <tr><td>1/3</td><td>≈</td><td>0.333…</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">What I learned today</div>
+        <textarea class="wb-area" rows="7" placeholder="Write 2–3 things you learned today about fraction and decimal patterns..."></textarea>
+      </div>
+    </div>
+    <div class="success-banner">
+      <h3>🎉 Session 3 complete!</h3>
+      <p>You can now extend number patterns involving fractions and decimals, identify additive and multiplicative rules, build position-to-term tables, and find any term in a rational number sequence. Great work!</p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const phases = [
+  { label: '5 min · Warm-up', pct: 10 },
+  { label: '15 min · Introduction', pct: 30 },
+  { label: '30 min · Deep Dive', pct: 60 },
+  { label: '45 min · Practice', pct: 90 },
+  { label: '50 min · Wrap-up', pct: 100 },
+];
+
+function goPhase(i) {
+  document.querySelectorAll('.phase-btn').forEach((b, j) => b.classList.toggle('active', j === i));
+  document.querySelectorAll('.panel').forEach((p, j) => p.classList.toggle('active', j === i));
+  document.getElementById('phase-label').textContent = phases[i].label;
+  document.getElementById('phase-fill').style.width = phases[i].pct + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---- WARM-UP ---- */
+const wDec = [
+  { q: '0.5 + 0.5 = ?', a: ['1', '1.0'] },
+  { q: '1.5 − 0.5 = ?', a: ['1', '1.0'] },
+  { q: '0.3 + 0.3 = ?', a: ['0.6'] },
+  { q: '2.5 + 0.5 = ?', a: ['3', '3.0'] },
+];
+const wFrac = [
+  { q: '¼ + ¼ = ?', a: ['1/2', '½', '2/4'] },
+  { q: '½ + ½ = ?', a: ['1', '1.0', '2/2'] },
+  { q: '¾ + ¼ = ?', a: ['1', '1.0', '4/4'] },
+  { q: '⅓ + ⅓ = ?', a: ['2/3', '⅔'] },
+];
+
+function buildWarmup(arr, containerId) {
+  const c = document.getElementById(containerId);
+  arr.forEach((item, i) => {
+    const id = containerId + '_' + i;
+    const row = document.createElement('div');
+    row.className = 'qa-row';
+    row.innerHTML = `<span class="qa-q">${item.q}</span>
+      <input class="qa-input" id="inp_${id}" type="text" placeholder="?" />
+      <button class="btn-check" onclick="checkWarm('${id}',${JSON.stringify(item.a)})">Check</button>
+      <span class="feedback" id="fb_${id}"></span>`;
+    c.appendChild(row);
+  });
+}
+buildWarmup(wDec, 'warmup-dec');
+buildWarmup(wFrac, 'warmup-frac');
+
+function checkWarm(id, answers) {
+  const val = document.getElementById('inp_' + id).value.trim().toLowerCase().replace(/\s/g, '');
+  const ok = answers.some(a => val === a.toLowerCase().replace(/\s/g, ''));
+  const fb = document.getElementById('fb_' + id);
+  fb.className = 'feedback ' + (ok ? 'correct' : 'wrong');
+  fb.textContent = ok ? '✓ Correct! = ' + answers[0] : '✗ Answer: ' + answers[0];
+}
+
+/* ---- INTRO EXAMPLES ---- */
+const introEx = [
+  { seq: '0.5, 1, 1.5, 2, …', type: 'Additive', rule: '+0.5', color: 'badge-green' },
+  { seq: '1, 2, 4, 8, …', type: 'Multiplicative', rule: '×2', color: 'badge-blue' },
+  { seq: '½, 1, 1½, 2, …', type: 'Additive', rule: '+½', color: 'badge-green' },
+  { seq: '100, 10, 1, 0.1, …', type: 'Multiplicative', rule: '÷10', color: 'badge-blue' },
+];
+const ieC = document.getElementById('intro-examples');
+introEx.forEach(ex => {
+  const d = document.createElement('div');
+  d.className = 'intro-ex-row';
+  d.innerHTML = `<span class="intro-ex-seq">${ex.seq}</span>
+    <span class="badge ${ex.color}">${ex.type}</span>
+    <span class="rule-tag">${ex.rule}</span>`;
+  ieC.appendChild(d);
+});
+
+/* ---- DEEP DIVE PATTERNS ---- */
+const decPats = [
+  { terms: ['0.2','0.4','0.6','0.8'], next: '1.0', rule: 'Add 0.2' },
+  { terms: ['1.5','2','2.5','3'], next: '3.5', rule: 'Add 0.5' },
+  { terms: ['0.1','0.01','0.001'], next: '0.0001', rule: 'Divide by 10 (×0.1)' },
+];
+const fracPats = [
+  { terms: ['½','1','1½','2'], next: '2½', rule: 'Add ½', alts: ['2.5','5/2'] },
+  { terms: ['¼','½','¾','1'], next: '1¼', rule: 'Add ¼', alts: ['1.25','5/4'] },
+  { terms: ['⅓','⅔','1','1⅓'], next: '1⅔', rule: 'Add ⅓', alts: ['5/3','1.666','1.67','1 2/3'] },
+];
+
+function buildPatterns(arr, cid) {
+  const c = document.getElementById(cid);
+  arr.forEach((pat, pi) => {
+    const wrap = document.createElement('div');
+    const row = document.createElement('div');
+    row.className = 'pattern-row';
+    pat.terms.forEach(t => {
+      const b = document.createElement('div'); b.className = 'p-box'; b.textContent = t;
+      const arr = document.createElement('span'); arr.className = 'p-arrow'; arr.textContent = '→';
+      row.appendChild(b); row.appendChild(arr);
+    });
+    const inp = document.createElement('input');
+    inp.className = 'p-input'; inp.placeholder = '?'; inp.id = `${cid}_${pi}`;
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') doCheck(); });
+    row.appendChild(inp);
+    const btn = document.createElement('button');
+    btn.className = 'p-submit'; btn.textContent = 'Check';
+    const fbId = `${cid}_fb_${pi}`, rId = `${cid}_rule_${pi}`;
+    function doCheck() {
+      const val = document.getElementById(`${cid}_${pi}`).value.trim();
+      const allAns = [pat.next, ...(pat.alts || [])];
+      const ok = allAns.some(a => val.toLowerCase().replace(/\s/g,'') === a.toLowerCase().replace(/\s/g,''));
+      const fb = document.getElementById(fbId);
+      fb.className = 'feedback ' + (ok ? 'correct' : 'wrong');
+      fb.textContent = ok ? '✓ Correct! Next term = ' + pat.next : '✗ Answer: ' + pat.next;
+      document.getElementById(rId).style.display = 'inline-block';
+    }
+    btn.onclick = doCheck;
+    row.appendChild(btn);
+    const fb = document.createElement('span'); fb.className = 'feedback'; fb.id = fbId;
+    row.appendChild(fb);
+    const ruleEl = document.createElement('span');
+    ruleEl.className = 'rule-tag'; ruleEl.id = rId;
+    ruleEl.textContent = 'Rule: ' + pat.rule; ruleEl.style.display = 'none';
+    row.appendChild(ruleEl);
+    wrap.appendChild(row);
+    c.appendChild(wrap);
+  });
+}
+buildPatterns(decPats, 'decimal-patterns');
+buildPatterns(fracPats, 'fraction-patterns');
+
+/* ---- PRACTICE ---- */
+const pracData = [
+  {
+    label: 'Pattern A', color: 'badge-blue',
+    terms: ['0.05','0.10','0.15'],
+    next3: ['0.20','0.25','0.30'],
+    rule: 'Add 0.05',
+    formula: '0.05 × n',
+    allTerms: ['0.05','0.10','0.15','0.20','0.25','0.30','0.35','0.40','0.45','0.50'],
+    tenth: '0.50',
+  },
+  {
+    label: 'Pattern B', color: 'badge-amber',
+    terms: ['3½','3','2½'],
+    next3: ['2','1½','1'],
+    rule: 'Subtract ½',
+    formula: '4 − (0.5 × n)',
+    allTerms: ['3½','3','2½','2','1½','1','½','0','−½','−1'],
+    tenth: '−1',
+  },
+  {
+    label: 'Pattern C', color: 'badge-green',
+    terms: ['1/10','1/5','3/10'],
+    next3: ['2/5','½','3/5'],
+    rule: 'Add 1/10',
+    formula: 'n/10',
+    allTerms: ['1/10','2/10','3/10','4/10','5/10','6/10','7/10','8/10','9/10','10/10'],
+    tenth: '1 (= 10/10)',
+  },
+];
+
+const pc = document.getElementById('practice-patterns');
+pracData.forEach((pat, pi) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  let blankHtml = pat.next3.map((_, bi) =>
+    `<div class="blank-box" id="blank_${pi}_${bi}">?</div><span class="p-arrow">→</span>`
+  ).join('');
+  // remove trailing arrow
+  blankHtml = blankHtml.slice(0, blankHtml.lastIndexOf('<span'));
+
+  let termTds = pat.allTerms.map((v, i) =>
+    `<td class="${i === 9 ? 'hi' : ''}">${v}</td>`
+  ).join('');
+
+  card.innerHTML = `
+    <div class="card-title"><span class="badge ${pat.color}">${pat.label}</span></div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:6px;">Sequence so far:</div>
+      <div class="pattern-row">
+        ${pat.terms.map(t => `<div class="p-box">${t}</div><span class="p-arrow">→</span>`).join('')}
+        ${blankHtml}
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+      <span style="font-size:13px;color:var(--text2);">What's the rule?</span>
+      <input class="qa-input" style="width:160px;" placeholder="e.g. Add 0.05" id="rule_inp_${pi}" />
+      <button class="reveal-btn" onclick="revealPrac(${pi})">Reveal answers ↓</button>
+    </div>
+    <div class="prac-reveal" id="prac_reveal_${pi}">
+      <div class="info-grid">
+        <div class="info-box" style="background:var(--green-light);">
+          <div class="info-box-label" style="color:var(--green);">Rule</div>
+          <div class="info-box-val" style="color:var(--green-dark);">${pat.rule}</div>
+        </div>
+        <div class="info-box" style="background:var(--blue-light);">
+          <div class="info-box-label" style="color:var(--blue);">Position-to-term formula</div>
+          <div class="info-box-val" style="color:var(--blue-dark);">t = ${pat.formula}</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="term-table">
+          <thead><tr><th>Position (n)</th>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<th>${n}</th>`).join('')}</tr></thead>
+          <tbody><tr><td style="font-weight:700;">Term</td>${termTds}</tr></tbody>
+        </table>
+      </div>
+      <div class="tenth-callout">10th term = ${pat.tenth}</div>
+    </div>`;
+  pc.appendChild(card);
+});
+
+function revealPrac(pi) {
+  const pat = pracData[pi];
+  document.getElementById('prac_reveal_' + pi).classList.add('open');
+  pat.next3.forEach((val, bi) => {
+    const el = document.getElementById(`blank_${pi}_${bi}`);
+    el.classList.add('revealed');
+    el.textContent = val;
+  });
+}
+
+/* ---- WRAP-UP ---- */
+function checkConnect(el, correct) {
+  document.querySelectorAll('.connect-opt').forEach(o => o.className = 'connect-opt');
+  el.className = 'connect-opt ' + (correct ? 'right' : 'wrong');
+  if (correct) document.getElementById('connect-reveal').classList.add('open');
+}
+</script>
+</body>
+</html>

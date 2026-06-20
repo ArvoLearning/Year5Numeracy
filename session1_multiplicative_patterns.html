@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 1 — Multiplicative Patterns</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f1a;
+  --surface: #141828;
+  --surface2: #1c2235;
+  --border: #2a3050;
+  --ink: #e8eaf6;
+  --muted: #7b82a0;
+  --gold: #f5c842;
+  --teal: #3ecfb2;
+  --rose: #f26b6b;
+  --violet: #9b7ff5;
+  --glow-gold: rgba(245,200,66,0.18);
+  --glow-teal: rgba(62,207,178,0.15);
+  --serif: 'DM Serif Display', serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--mono);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── dot-grid background ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(circle, #2a3050 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(13,15,26,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.hd-left { display: flex; flex-direction: column; gap: 2px; }
+.hd-eye { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
+.hd-title { font-family: var(--serif); font-size: 18px; color: var(--gold); }
+
+.timer-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.timer-lbl { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+#timer-display {
+  font-family: var(--serif); font-size: 26px; color: var(--teal);
+  min-width: 68px; text-align: center;
+  text-shadow: 0 0 18px rgba(62,207,178,0.5);
+}
+.t-btn {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  font-family: var(--mono); font-size: 11px; padding: 5px 10px; border-radius: 4px;
+  cursor: pointer; transition: all .15s;
+}
+.t-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+/* ── TABS ── */
+nav {
+  display: flex; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none; position: relative; z-index: 100;
+}
+nav::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 13px 18px; font-size: 11px; font-family: var(--mono);
+  cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  color: var(--muted); transition: all .2s; user-select: none;
+  display: flex; align-items: center; gap: 7px;
+}
+.tab:hover { color: var(--ink); }
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab .pill {
+  font-size: 9px; background: var(--border); color: var(--muted);
+  padding: 1px 7px; border-radius: 20px;
+}
+.tab.active .pill { background: var(--gold); color: #0d0f1a; }
+
+/* ── MAIN ── */
+main {
+  max-width: 1000px; margin: 0 auto;
+  padding: 32px 22px 90px;
+  position: relative; z-index: 1;
+}
+
+.section { display: none; animation: rise .3s ease; }
+.section.active { display: block; }
+@keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* progress */
+.prog-wrap {
+  height: 3px; background: var(--border); border-radius: 20px;
+  margin-bottom: 28px; overflow: hidden;
+}
+.prog-fill {
+  height: 100%; background: linear-gradient(90deg, var(--teal), var(--gold));
+  border-radius: 20px; transition: width .45s cubic-bezier(.4,0,.2,1);
+}
+
+/* section header */
+.sec-head {
+  display: flex; align-items: flex-start; gap: 16px; margin-bottom: 26px;
+}
+.badge {
+  flex-shrink: 0; width: 50px; height: 50px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; border: 1px solid;
+}
+.badge.gold { background: var(--glow-gold); border-color: rgba(245,200,66,.4); }
+.badge.teal { background: var(--glow-teal); border-color: rgba(62,207,178,.3); }
+.badge.rose { background: rgba(242,107,107,.1); border-color: rgba(242,107,107,.3); }
+.badge.violet { background: rgba(155,127,245,.1); border-color: rgba(155,127,245,.3); }
+.badge.dark { background: var(--surface2); border-color: var(--border); }
+
+.sec-meta h2 { font-family: var(--serif); font-size: 22px; color: var(--ink); line-height: 1.2; }
+.sec-meta .sub { font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* card */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 22px; margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--teal), transparent);
+  opacity: 0;
+}
+.card.glow-t::before { opacity: 1; }
+.card.glow-g::before { background: linear-gradient(90deg, var(--gold), transparent); opacity: 1; }
+
+.card-label {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-label::before { content:''; display:block; width:16px; height:1px; background: var(--teal); }
+.card-label.gold { color: var(--gold); }
+.card-label.gold::before { background: var(--gold); }
+.card-label.rose { color: var(--rose); }
+.card-label.rose::before { background: var(--rose); }
+
+/* two-col */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+/* prose */
+.prose { font-size: 13.5px; line-height: 1.8; color: #c5c8dc; }
+.prose strong { color: var(--gold); font-weight: 700; }
+.prose em { color: var(--teal); font-style: normal; }
+
+/* callout */
+.callout {
+  padding: 13px 16px; border-radius: 8px; font-size: 13px; line-height: 1.7;
+  margin: 12px 0; border-left: 3px solid;
+}
+.callout.teal { border-color: var(--teal); background: rgba(62,207,178,.08); }
+.callout.gold { border-color: var(--gold); background: rgba(245,200,66,.08); }
+.callout.rose { border-color: var(--rose); background: rgba(242,107,107,.08); }
+
+/* ── WARM-UP ── */
+.seq-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 18px 22px; margin-bottom: 14px;
+}
+.seq-label { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; }
+.seq-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.seq-num {
+  font-family: var(--serif); font-size: 28px; color: var(--ink);
+  min-width: 44px; text-align: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px;
+}
+.seq-arrow { color: var(--muted); font-size: 18px; }
+.seq-blank {
+  font-family: var(--serif); font-size: 28px;
+  min-width: 70px; text-align: center;
+  background: var(--bg); border: 2px dashed var(--border);
+  border-radius: 8px; padding: 6px 10px; color: var(--muted);
+  cursor: pointer; transition: all .2s; user-select: none;
+}
+.seq-blank:hover { border-color: var(--gold); }
+.seq-blank.revealed { border-style: solid; border-color: var(--teal); color: var(--teal); }
+.seq-rule {
+  font-size: 12px; color: var(--muted); margin-top: 6px; display: none;
+}
+.seq-rule.show { display: block; color: var(--gold); }
+.reveal-btn {
+  padding: 7px 16px; border-radius: 6px; font-family: var(--mono); font-size: 11px;
+  cursor: pointer; background: none; border: 1px solid var(--border); color: var(--muted);
+  transition: all .2s;
+}
+.reveal-btn:hover { border-color: var(--gold); color: var(--gold); }
+.reveal-btn.done { border-color: var(--teal); color: var(--teal); pointer-events: none; }
+
+/* ── PATTERN CARDS ── */
+.pattern-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.pnum {
+  font-family: var(--serif); font-size: 26px;
+  padding: 8px 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; transition: all .3s;
+}
+.pnum.lit { border-color: var(--teal); color: var(--teal); box-shadow: 0 0 12px rgba(62,207,178,.25); }
+.pmid {
+  font-size: 12px; color: var(--muted); display: flex; flex-direction: column;
+  align-items: center; gap: 2px;
+}
+.pmid .op { font-size: 16px; font-weight: 700; }
+.pmid .op.show { color: var(--gold); }
+.pblank {
+  font-family: var(--serif); font-size: 26px;
+  padding: 8px 18px; background: var(--bg);
+  border: 2px dashed var(--border); border-radius: 8px;
+  color: var(--muted); cursor: pointer; transition: all .2s; user-select: none;
+}
+.pblank:hover { border-color: var(--gold); color: var(--gold); }
+.pblank.solved { border-style: solid; border-color: var(--teal); color: var(--teal);
+  box-shadow: 0 0 12px rgba(62,207,178,.2); pointer-events: none; }
+.rule-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 12px; border: 1px solid var(--border); color: var(--muted);
+  cursor: pointer; transition: all .2s; user-select: none;
+}
+.rule-chip:hover { border-color: var(--violet); color: var(--violet); }
+.rule-chip.revealed { border-color: var(--violet); background: rgba(155,127,245,.12); color: var(--violet); }
+
+/* ── RELATIONAL THINKING ── */
+.balance-row {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  flex-wrap: wrap; margin: 16px 0;
+}
+.side {
+  font-family: var(--serif); font-size: 22px; text-align: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 20px;
+}
+.equals-sign {
+  font-family: var(--serif); font-size: 30px; color: var(--gold);
+  text-shadow: 0 0 12px rgba(245,200,66,.4);
+}
+.unknown-input {
+  display: inline-block; width: 54px;
+  background: var(--bg); border: 2px solid var(--border);
+  border-radius: 6px; color: var(--gold); font-family: var(--serif);
+  font-size: 22px; text-align: center; padding: 4px;
+  transition: border-color .2s;
+}
+.unknown-input:focus { outline: none; border-color: var(--gold); }
+.check-btn {
+  padding: 8px 20px; border-radius: 7px; font-family: var(--mono); font-size: 12px;
+  cursor: pointer; background: none; border: 1px solid var(--border); color: var(--muted);
+  transition: all .2s; display: block; margin: 8px auto 0;
+}
+.check-btn:hover { border-color: var(--teal); color: var(--teal); }
+.check-btn:disabled { border-color: var(--teal); color: var(--teal); pointer-events: none; }
+.rt-feedback { text-align: center; font-size: 12px; margin-top: 8px; min-height: 18px; }
+.rt-feedback.ok { color: var(--teal); }
+.rt-feedback.err { color: var(--rose); }
+
+/* ── FUNCTION MACHINE ── */
+.machine-wrap {
+  display: flex; align-items: stretch; gap: 0; justify-content: center;
+  flex-wrap: wrap; margin: 18px 0;
+}
+.m-col {
+  display: flex; flex-direction: column; gap: 10px; align-items: center;
+}
+.m-label { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2px; }
+.m-val {
+  font-family: var(--serif); font-size: 24px;
+  width: 64px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+}
+.m-arrow {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 36px; gap: 4px; padding-top: 22px;
+}
+.m-arrow-line { width: 100%; height: 2px; background: var(--border); position: relative; }
+.m-arrow-line::after { content: '▶'; position: absolute; right: -8px; top: -8px; font-size: 14px; color: var(--border); }
+.machine-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--surface2); border: 2px solid var(--gold);
+  border-radius: 14px; padding: 18px 28px; margin: 0 10px;
+  box-shadow: 0 0 24px rgba(245,200,66,.12);
+  min-width: 120px;
+}
+.machine-top { font-size: 10px; color: var(--muted); letter-spacing: 0.15em; margin-bottom: 8px; }
+.machine-rule {
+  font-family: var(--serif); font-size: 22px; color: var(--gold);
+  border: 1px dashed rgba(245,200,66,.4); border-radius: 8px;
+  padding: 6px 16px; min-width: 80px; text-align: center;
+  cursor: pointer; transition: all .2s;
+}
+.machine-rule:hover { background: rgba(245,200,66,.08); }
+.machine-rule.locked { cursor: default; }
+.machine-rule.show-rule { border-style: solid; color: var(--gold); }
+
+.fm-pairs { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.fm-pair { display: flex; align-items: center; gap: 8px; }
+.fm-pair .arrow { color: var(--muted); }
+.fm-pair .in, .fm-pair .out {
+  font-family: var(--serif); font-size: 18px;
+  padding: 4px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+}
+.fm-pair .out { color: var(--teal); border-color: rgba(62,207,178,.3); }
+
+/* determine rule input */
+.rule-guess-wrap { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.rule-guess-input {
+  padding: 8px 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 7px; color: var(--ink); font-family: var(--mono); font-size: 13px;
+  width: 180px; transition: border-color .2s;
+}
+.rule-guess-input:focus { outline: none; border-color: var(--gold); }
+.submit-btn {
+  padding: 8px 18px; border-radius: 7px; font-family: var(--mono); font-size: 12px;
+  cursor: pointer; background: var(--gold); color: #0d0f1a;
+  border: none; font-weight: 700; transition: all .2s;
+}
+.submit-btn:hover { background: #f0bc20; }
+
+/* ── WHITEBOARD ── */
+.wb-toolbar {
+  display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
+  padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px 10px 0 0; border-bottom: none;
+}
+.wb-btn {
+  padding: 6px 12px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 5px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+  cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 5px;
+}
+.wb-btn:hover { border-color: var(--ink); color: var(--ink); }
+.wb-btn.active { background: var(--gold); color: #0d0f1a; border-color: var(--gold); font-weight: 700; }
+.wb-btn.danger { color: var(--rose); }
+.wb-btn.danger:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
+.cswatch {
+  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  border: 2.5px solid transparent; transition: transform .15s; flex-shrink: 0;
+}
+.cswatch:hover { transform: scale(1.2); }
+.cswatch.active { border-color: #fff; }
+.wb-sep { width: 1px; height: 26px; background: var(--border); }
+.sz-btn {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 5px; border: 1px solid var(--border); background: var(--surface);
+  transition: all .15s;
+}
+.sz-btn:hover { border-color: var(--ink); }
+.sz-btn.active { border-color: var(--gold); background: rgba(245,200,66,.12); }
+.sz-dot { border-radius: 50%; background: var(--muted); display: block; }
+.sz-btn.active .sz-dot { background: var(--gold); }
+canvas#wb {
+  display: block; width: 100%; border: 1px solid var(--border);
+  border-top: none; border-radius: 0 0 10px 10px;
+  background: #10121f; cursor: crosshair; touch-action: none;
+}
+
+/* ── QUIZ ── */
+.qcard {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px 22px; margin-bottom: 14px;
+}
+.qcard.answered { pointer-events: none; }
+.q-text { font-size: 14px; line-height: 1.7; margin-bottom: 14px; font-family: var(--serif); color: var(--ink); }
+.q-opts { display: flex; flex-direction: column; gap: 8px; }
+.q-opt {
+  padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer; font-size: 13px; transition: all .2s; background: var(--surface2); color: var(--ink);
+}
+.q-opt:hover { border-color: var(--gold); color: var(--gold); }
+.q-opt.correct { border-color: var(--teal); background: rgba(62,207,178,.1); color: var(--teal); }
+.q-opt.wrong { border-color: var(--rose); background: rgba(242,107,107,.08); color: var(--rose); }
+.q-fb {
+  font-size: 12px; margin-top: 10px; padding: 8px 12px; border-radius: 6px; display: none;
+}
+.q-fb.show { display: block; }
+.q-fb.ok { background: rgba(62,207,178,.1); color: var(--teal); }
+.q-fb.err { background: rgba(242,107,107,.08); color: var(--rose); }
+#quiz-score {
+  display: none; text-align: center; padding: 28px;
+  font-family: var(--serif); font-size: 36px; color: var(--gold);
+  text-shadow: 0 0 24px rgba(245,200,66,.4);
+}
+
+/* ── FOOTER NAV ── */
+.footer-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
+  background: rgba(13,15,26,0.95); backdrop-filter: blur(10px);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 28px;
+}
+.nav-btn {
+  padding: 10px 22px; border-radius: 8px; font-family: var(--mono); font-size: 12px;
+  cursor: pointer; border: 1px solid; transition: all .2s; font-weight: 700; letter-spacing: 0.05em;
+}
+.nav-prev { background: none; color: var(--muted); border-color: var(--border); }
+.nav-prev:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
+.nav-prev:disabled { opacity: .3; cursor: default; }
+.nav-next { background: var(--gold); color: #0d0f1a; border-color: var(--gold); }
+.nav-next:hover { background: #f0bc20; }
+.sec-ind { font-size: 11px; color: var(--muted); text-align: center; }
+
+/* misc utils */
+.mt { margin-top: 14px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip {
+  padding: 5px 13px; border-radius: 20px; font-size: 12px;
+  border: 1px solid var(--border); color: var(--muted); background: var(--surface2);
+}
+.math-eq {
+  font-family: var(--serif); font-size: 20px; color: var(--ink);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 18px; display: inline-block; margin: 6px 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="hd-left">
+    <span class="hd-eye">Year 4 · Mathematics · Patterns &amp; Algebra</span>
+    <div class="hd-title">Session 1 — Rules for Multiplicative Patterns</div>
+  </div>
+  <div class="timer-wrap">
+    <span class="timer-lbl">Timer</span>
+    <div id="timer-display">00:00</div>
+    <button class="t-btn" id="btn-start">▶ Start</button>
+    <button class="t-btn" id="btn-reset">↺</button>
+  </div>
+</header>
+
+<!-- TABS -->
+<nav>
+  <div class="tab active" data-tab="0">⚡ Warm-up <span class="pill">5 min</span></div>
+  <div class="tab" data-tab="1">🚀 Introduction <span class="pill">10 min</span></div>
+  <div class="tab" data-tab="2">🔢 Deep Dive <span class="pill">15 min</span></div>
+  <div class="tab" data-tab="3">🎨 Whiteboard</div>
+  <div class="tab" data-tab="4">⚙️ Function Machines <span class="pill">15 min</span></div>
+  <div class="tab" data-tab="5">✅ Wrap-up Quiz <span class="pill">5 min</span></div>
+</nav>
+
+<main>
+  <!-- PROGRESS -->
+  <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:16.66%"></div></div>
+
+  <!-- ══ 0: WARM-UP ══ -->
+  <div class="section active" id="tab-0">
+    <div class="sec-head">
+      <div class="badge gold">⚡</div>
+      <div class="sec-meta">
+        <h2>Warm-up — Pattern Spotter</h2>
+        <div class="sub">5 minutes · Addition &amp; subtraction patterns</div>
+      </div>
+    </div>
+
+    <div class="card glow-t">
+      <div class="card-label">Reveal the missing number</div>
+      <div class="prose" style="margin-bottom:14px;">These patterns grow or shrink by adding or subtracting. Click the <strong>?</strong> to reveal each answer, then click <em>Show Rule</em>.</div>
+
+      <!-- seq 1 -->
+      <div class="seq-card">
+        <div class="seq-label">Sequence A</div>
+        <div class="seq-row">
+          <div class="seq-num">2</div><div class="seq-arrow">→</div>
+          <div class="seq-num">4</div><div class="seq-arrow">→</div>
+          <div class="seq-num">6</div><div class="seq-arrow">→</div>
+          <div class="seq-num">8</div><div class="seq-arrow">→</div>
+          <div class="seq-blank" id="wb0" onclick="revealBlank('wb0',10,'seq-rule-0')">?</div>
+        </div>
+        <div class="seq-rule" id="seq-rule-0">Rule: <strong>Add 2</strong> each time (+2)</div>
+        <button class="reveal-btn" id="rb0" onclick="revealAll('wb0','seq-rule-0','rb0')">Show Rule</button>
+      </div>
+
+      <!-- seq 2 -->
+      <div class="seq-card">
+        <div class="seq-label">Sequence B</div>
+        <div class="seq-row">
+          <div class="seq-num">10</div><div class="seq-arrow">→</div>
+          <div class="seq-num">8</div><div class="seq-arrow">→</div>
+          <div class="seq-num">6</div><div class="seq-arrow">→</div>
+          <div class="seq-num">4</div><div class="seq-arrow">→</div>
+          <div class="seq-blank" id="wb1" onclick="revealBlank('wb1',2,'seq-rule-1')">?</div>
+        </div>
+        <div class="seq-rule" id="seq-rule-1">Rule: <strong>Subtract 2</strong> each time (−2)</div>
+        <button class="reveal-btn" id="rb1" onclick="revealAll('wb1','seq-rule-1','rb1')">Show Rule</button>
+      </div>
+    </div>
+
+    <div class="callout gold">
+      💡 <strong>Think:</strong> These patterns change by the <em>same amount</em> each step. Today we'll discover patterns that change in a much more powerful way — by multiplying!
+    </div>
+  </div>
+
+  <!-- ══ 1: INTRODUCTION ══ -->
+  <div class="section" id="tab-1">
+    <div class="sec-head">
+      <div class="badge teal">🚀</div>
+      <div class="sec-meta">
+        <h2>Patterns that Grow Fast!</h2>
+        <div class="sub">10 minutes · Multipliers &amp; divisors</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-label gold">Additive Pattern</div>
+        <div class="prose" style="margin-bottom:10px;">Each term changes by the <strong>same amount</strong>.</div>
+        <div class="pattern-row" id="addpat">
+          <div class="pnum">1</div><div class="seq-arrow" style="color:var(--muted)">+3→</div>
+          <div class="pnum">4</div><div class="seq-arrow" style="color:var(--muted)">+3→</div>
+          <div class="pnum">7</div><div class="seq-arrow" style="color:var(--muted)">+3→</div>
+          <div class="pnum">10</div>
+        </div>
+        <div class="callout teal" style="font-size:12px;">Going up by 3. After 10 steps: <strong>31</strong></div>
+      </div>
+      <div class="card">
+        <div class="card-label gold">Multiplicative Pattern</div>
+        <div class="prose" style="margin-bottom:10px;">Each term is <strong>multiplied</strong> by the same number.</div>
+        <div class="pattern-row">
+          <div class="pnum lit">1</div><div class="seq-arrow" style="color:var(--teal)">×3→</div>
+          <div class="pnum lit">3</div><div class="seq-arrow" style="color:var(--teal)">×3→</div>
+          <div class="pnum lit">9</div><div class="seq-arrow" style="color:var(--teal)">×3→</div>
+          <div class="pnum lit">27</div>
+        </div>
+        <div class="callout gold" style="font-size:12px;">After 10 steps: <strong>59,049</strong> — that's the power of multiplying!</div>
+      </div>
+    </div>
+
+    <div class="card glow-g">
+      <div class="card-label gold">Key Vocabulary</div>
+      <div class="two-col">
+        <div>
+          <div class="prose" style="margin-bottom:8px;"><strong>Multiplier</strong></div>
+          <div class="prose">The number you <em>multiply</em> by to get from one term to the next. The pattern grows.</div>
+          <div class="chip-row">
+            <span class="chip">×2 doubles</span><span class="chip">×3 triples</span><span class="chip">×10</span>
+          </div>
+        </div>
+        <div>
+          <div class="prose" style="margin-bottom:8px;"><strong>Divisor</strong></div>
+          <div class="prose">The number you <em>divide</em> by to get from one term to the next. The pattern shrinks.</div>
+          <div class="chip-row">
+            <span class="chip">÷2 halves</span><span class="chip">÷3</span><span class="chip">÷10</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Successive Term Rule</div>
+      <div class="prose">The <strong>rule</strong> tells us what to do to get from one term to the next. Finding the rule means you can predict <em>any</em> term in the pattern — not just the next one!</div>
+      <div class="callout teal mt">To find the rule: divide any term by the one before it.<br>
+        e.g. 4, 8, 16 → 8 ÷ 4 = <strong>2</strong>, so the rule is <strong>×2</strong></div>
+    </div>
+  </div>
+
+  <!-- ══ 2: DEEP DIVE ══ -->
+  <div class="section" id="tab-2">
+    <div class="sec-head">
+      <div class="badge violet">🔢</div>
+      <div class="sec-meta">
+        <h2>Identifying Multiplicative Rules</h2>
+        <div class="sub">15 minutes · Patterns + Relational Thinking</div>
+      </div>
+    </div>
+
+    <!-- PATTERNS -->
+    <div class="card glow-t">
+      <div class="card-label">Click ? to reveal — then find the rule</div>
+
+      <!-- P1 -->
+      <div id="p1" style="margin-bottom:18px;">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Example 1</div>
+        <div class="pattern-row">
+          <div class="pnum lit">2</div>
+          <div class="pmid"><span class="op" id="op1a">×?</span></div>
+          <div class="pnum lit">4</div>
+          <div class="pmid"><span class="op" id="op1b">×?</span></div>
+          <div class="pnum lit">8</div>
+          <div class="pmid"><span class="op" id="op1c">×?</span></div>
+          <div class="pnum lit">16</div>
+          <div class="pmid"><span class="op">→</span></div>
+          <div class="pblank" id="pb1" onclick="solvePattern('pb1',32,['op1a','op1b','op1c'],'×2','rc1')">?</div>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="rule-chip" id="rc1" onclick="revealChip('rc1','Rule: Multiply by 2 (×2)')">🔍 Reveal Rule</span>
+        </div>
+      </div>
+
+      <!-- P2 -->
+      <div id="p2" style="margin-bottom:18px;">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Example 2</div>
+        <div class="pattern-row">
+          <div class="pnum lit">3</div>
+          <div class="pmid"><span class="op" id="op2a">×?</span></div>
+          <div class="pnum lit">9</div>
+          <div class="pmid"><span class="op" id="op2b">×?</span></div>
+          <div class="pnum lit">27</div>
+          <div class="pmid"><span class="op">→</span></div>
+          <div class="pblank" id="pb2" onclick="solvePattern('pb2',81,['op2a','op2b'],'×3','rc2')">?</div>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="rule-chip" id="rc2" onclick="revealChip('rc2','Rule: Multiply by 3 (×3)')">🔍 Reveal Rule</span>
+        </div>
+      </div>
+
+      <!-- P3 -->
+      <div id="p3" style="margin-bottom:18px;">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Example 3 — Dividing pattern</div>
+        <div class="pattern-row">
+          <div class="pnum lit">81</div>
+          <div class="pmid"><span class="op" id="op3a">÷?</span></div>
+          <div class="pnum lit">27</div>
+          <div class="pmid"><span class="op" id="op3b">÷?</span></div>
+          <div class="pnum lit">9</div>
+          <div class="pmid"><span class="op" id="op3c">÷?</span></div>
+          <div class="pnum lit">3</div>
+          <div class="pmid"><span class="op">→</span></div>
+          <div class="pblank" id="pb3" onclick="solvePattern('pb3',1,['op3a','op3b','op3c'],'÷3','rc3')">?</div>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="rule-chip" id="rc3" onclick="revealChip('rc3','Rule: Divide by 3 (÷3)')">🔍 Reveal Rule</span>
+        </div>
+      </div>
+
+      <!-- P4 -->
+      <div id="p4">
+        <div style="font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Example 4 — Dividing pattern</div>
+        <div class="pattern-row">
+          <div class="pnum lit">100</div>
+          <div class="pmid"><span class="op" id="op4a">÷?</span></div>
+          <div class="pnum lit">50</div>
+          <div class="pmid"><span class="op" id="op4b">÷?</span></div>
+          <div class="pnum lit">25</div>
+          <div class="pmid"><span class="op">→</span></div>
+          <div class="pblank" id="pb4" onclick="solvePattern('pb4',12.5,['op4a','op4b'],'÷2','rc4')">?</div>
+        </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="rule-chip" id="rc4" onclick="revealChip('rc4','Rule: Divide by 2 (÷2)')">🔍 Reveal Rule</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELATIONAL THINKING -->
+    <div class="card" style="margin-top:0;">
+      <div class="card-label rose">Relational Thinking — Balance the Equation</div>
+      <div class="prose" style="margin-bottom:12px;">The <strong>=</strong> sign means both sides are <em>equal in value</em> — like a balanced scale. Find the missing value.</div>
+
+      <!-- RT 1 -->
+      <div style="margin-bottom:22px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;">Problem 1</div>
+        <div class="balance-row">
+          <div class="side">6 + <input class="unknown-input" id="rt1-inp" maxlength="3" /></div>
+          <div class="equals-sign">=</div>
+          <div class="side" style="color:var(--teal);">7 + 4</div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:4px;">Hint: 7 + 4 = ?</div>
+        <button class="check-btn" onclick="checkRT('rt1-inp',5,'rt1-fb','rt1-hint',11,'6 + 5 = 11 = 7 + 4 ✓')">Check Answer</button>
+        <div class="rt-feedback" id="rt1-fb"></div>
+      </div>
+
+      <!-- RT 2 -->
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;">Problem 2</div>
+        <div class="balance-row">
+          <div class="side">3 × <input class="unknown-input" id="rt2-inp" maxlength="3" /></div>
+          <div class="equals-sign">=</div>
+          <div class="side" style="color:var(--teal);">2 × 6</div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:4px;">Hint: 2 × 6 = ?  Then divide by 3.</div>
+        <button class="check-btn" onclick="checkRT('rt2-inp',4,'rt2-fb','rt2-hint',12,'3 × 4 = 12 = 2 × 6 ✓')">Check Answer</button>
+        <div class="rt-feedback" id="rt2-fb"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 3: WHITEBOARD ══ -->
+  <div class="section" id="tab-3">
+    <div class="sec-head">
+      <div class="badge dark">🎨</div>
+      <div class="sec-meta">
+        <h2>Whiteboard — Work It Out</h2>
+        <div class="sub">Draw · Write · Annotate</div>
+      </div>
+    </div>
+
+    <div class="wb-toolbar">
+      <button class="wb-btn active" id="tool-pen">✏ Pen</button>
+      <button class="wb-btn" id="tool-eraser">🧹 Eraser</button>
+      <button class="wb-btn" id="tool-text">T Text</button>
+      <div class="wb-sep"></div>
+      <div class="cswatch active" style="background:#e8eaf6;" data-c="#e8eaf6"></div>
+      <div class="cswatch" style="background:#f5c842;" data-c="#f5c842"></div>
+      <div class="cswatch" style="background:#3ecfb2;" data-c="#3ecfb2"></div>
+      <div class="cswatch" style="background:#f26b6b;" data-c="#f26b6b"></div>
+      <div class="cswatch" style="background:#9b7ff5;" data-c="#9b7ff5"></div>
+      <div class="cswatch" style="background:#68d8f0;" data-c="#68d8f0"></div>
+      <div class="wb-sep"></div>
+      <div class="sz-btn active" data-sz="2"><span class="sz-dot" style="width:4px;height:4px;"></span></div>
+      <div class="sz-btn" data-sz="5"><span class="sz-dot" style="width:8px;height:8px;"></span></div>
+      <div class="sz-btn" data-sz="12"><span class="sz-dot" style="width:14px;height:14px;"></span></div>
+      <div class="wb-sep"></div>
+      <button class="wb-btn" id="wb-undo">↩ Undo</button>
+      <button class="wb-btn danger" id="wb-clear">🗑 Clear</button>
+    </div>
+    <canvas id="wb" height="500"></canvas>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="card-label">Quick Prompts — click to stamp on board</div>
+      <div class="chip-row" id="wb-prompts">
+        <span class="chip" style="cursor:pointer" data-stamp="2 → 4 → 8 → 16 → ?">Stamp Pattern ×2</span>
+        <span class="chip" style="cursor:pointer" data-stamp="3 → 9 → 27 → 81 → ?">Stamp Pattern ×3</span>
+        <span class="chip" style="cursor:pointer" data-stamp="81 → 27 → 9 → 3 → ?">Stamp Pattern ÷3</span>
+        <span class="chip" style="cursor:pointer" data-stamp="6 + ? = 7 + 4">Stamp Equation 1</span>
+        <span class="chip" style="cursor:pointer" data-stamp="3 × ? = 2 × 6">Stamp Equation 2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 4: FUNCTION MACHINES ══ -->
+  <div class="section" id="tab-4">
+    <div class="sec-head">
+      <div class="badge rose">⚙️</div>
+      <div class="sec-meta">
+        <h2>Function Machines</h2>
+        <div class="sub">15 minutes · Determine the rule + Relational Thinking</div>
+      </div>
+    </div>
+
+    <!-- Machine 1 -->
+    <div class="card glow-g">
+      <div class="card-label gold">Machine 1 — What's the rule?</div>
+      <div class="prose" style="margin-bottom:14px;">Study the input/output pairs. What operation transforms every input into its output?</div>
+
+      <div class="machine-wrap">
+        <div class="m-col">
+          <div class="m-label">Input</div>
+          <div class="fm-pairs">
+            <div class="fm-pair"><div class="in">2</div></div>
+            <div class="fm-pair"><div class="in">5</div></div>
+            <div class="fm-pair"><div class="in">10</div></div>
+          </div>
+        </div>
+        <div class="m-arrow" style="padding-top:50px;">
+          <div style="width:40px;height:2px;background:var(--border);position:relative;">
+            <span style="position:absolute;right:-10px;top:-10px;color:var(--border);font-size:16px;">▶</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;margin: 0 6px;">
+          <div class="machine-box">
+            <div class="machine-top">RULE</div>
+            <div class="machine-rule" id="mr1" onclick="revealMachine('mr1','× 3','mg1-fb')">?</div>
+          </div>
+        </div>
+        <div class="m-arrow" style="padding-top:50px;">
+          <div style="width:40px;height:2px;background:var(--border);position:relative;">
+            <span style="position:absolute;right:-10px;top:-10px;color:var(--border);font-size:16px;">▶</span>
+          </div>
+        </div>
+        <div class="m-col">
+          <div class="m-label">Output</div>
+          <div class="fm-pairs">
+            <div class="fm-pair"><div class="out">6</div></div>
+            <div class="fm-pair"><div class="out">15</div></div>
+            <div class="fm-pair"><div class="out">30</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rule-guess-wrap">
+        <input class="rule-guess-input" id="mg1-input" placeholder="Type the rule e.g. × 3" />
+        <button class="submit-btn" onclick="checkMachineGuess('mg1-input','mg1-fb','× 3',['×3','x3','*3','multiply by 3','times 3'])">Check</button>
+        <button class="reveal-btn" onclick="revealMachine('mr1','× 3','mg1-fb')">Reveal</button>
+      </div>
+      <div class="rt-feedback" id="mg1-fb" style="margin-top:6px;text-align:left;"></div>
+    </div>
+
+    <!-- Machine 2 — student builds -->
+    <div class="card">
+      <div class="card-label gold">Machine 2 — Build Your Own Pairs</div>
+      <div class="prose" style="margin-bottom:14px;">The rule is <strong>× 5</strong>. Fill in the missing outputs, then check your answers.</div>
+      <div id="m2-pairs" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+        <!-- pairs rendered by JS -->
+      </div>
+      <button class="submit-btn" onclick="checkM2()">Check All</button>
+      <div class="rt-feedback" id="m2-fb" style="margin-top:8px;text-align:left;"></div>
+    </div>
+
+    <!-- Relational Thinking Practice -->
+    <div class="card">
+      <div class="card-label rose">Relational Thinking — Three Problems</div>
+
+      <!-- RT-A -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em;">Problem A</div>
+        <div class="balance-row">
+          <div class="side">5 × <input class="unknown-input" id="rta-inp" maxlength="3" /></div>
+          <div class="equals-sign">=</div>
+          <div class="side" style="color:var(--teal);">4 × 10</div>
+        </div>
+        <button class="check-btn" onclick="checkRT('rta-inp',8,'rta-fb','',40,'5 × 8 = 40 = 4 × 10 ✓')">Check</button>
+        <div class="rt-feedback" id="rta-fb"></div>
+      </div>
+
+      <!-- RT-B -->
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em;">Problem B</div>
+        <div class="balance-row">
+          <div class="side">24 ÷ <input class="unknown-input" id="rtb-inp" maxlength="3" /></div>
+          <div class="equals-sign">=</div>
+          <div class="side" style="color:var(--teal);">18 ÷ 3</div>
+        </div>
+        <button class="check-btn" onclick="checkRT('rtb-inp',4,'rtb-fb','',6,'24 ÷ 4 = 6 = 18 ÷ 3 ✓')">Check</button>
+        <div class="rt-feedback" id="rtb-fb"></div>
+      </div>
+
+      <!-- RT-C commutative -->
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.1em;">Problem C — Commutative Property</div>
+        <div class="balance-row">
+          <div class="side">7 × 5</div>
+          <div class="equals-sign">=</div>
+          <div class="side"><input class="unknown-input" id="rtc-inp" maxlength="3" /> × 7</div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:4px;">Hint: Multiplication can be done in any order!</div>
+        <button class="check-btn" onclick="checkRT('rtc-inp',5,'rtc-fb','',35,'7 × 5 = 35 = 5 × 7 — multiplication is commutative! ✓')">Check</button>
+        <div class="rt-feedback" id="rtc-fb"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 5: WRAP-UP QUIZ ══ -->
+  <div class="section" id="tab-5">
+    <div class="sec-head">
+      <div class="badge teal">✅</div>
+      <div class="sec-meta">
+        <h2>Wrap-up — Pattern Power</h2>
+        <div class="sub">5 minutes · Knowledge check</div>
+      </div>
+    </div>
+
+    <div class="callout teal" style="margin-bottom:20px;">
+      Answer all questions to complete Session 1. Think carefully — some need you to apply rules, not just recall them.
+    </div>
+
+    <div id="quiz-container"></div>
+    <div id="quiz-score"></div>
+  </div>
+
+</main>
+
+<!-- FOOTER NAV -->
+<div class="footer-nav">
+  <button class="nav-btn nav-prev" id="btn-prev" disabled>← Prev</button>
+  <div class="sec-ind" id="sec-ind">Warm-up · 1 of 6</div>
+  <button class="nav-btn nav-next" id="btn-next">Next →</button>
+</div>
+
+<script>
+// ══════════════════════════════
+// NAVIGATION
+// ══════════════════════════════
+let cur = 0; const TOTAL = 6;
+const LABELS = ['Warm-up','Introduction','Deep Dive','Whiteboard','Function Machines','Wrap-up Quiz'];
+const tabs = document.querySelectorAll('.tab');
+const secs = document.querySelectorAll('.section');
+const prog = document.getElementById('prog');
+const secInd = document.getElementById('sec-ind');
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+
+function goTo(i) {
+  cur = Math.max(0, Math.min(TOTAL-1, i));
+  tabs.forEach((t,idx) => t.classList.toggle('active', idx===cur));
+  secs.forEach((s,idx) => s.classList.toggle('active', idx===cur));
+  prog.style.width = ((cur+1)/TOTAL*100)+'%';
+  secInd.textContent = `${LABELS[cur]} · ${cur+1} of ${TOTAL}`;
+  btnPrev.disabled = cur===0;
+  btnNext.textContent = cur===TOTAL-1 ? '✓ Done' : 'Next →';
+  if (cur===3) resizeWB();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+tabs.forEach(t => t.addEventListener('click', () => goTo(+t.dataset.tab)));
+btnPrev.addEventListener('click', () => goTo(cur-1));
+btnNext.addEventListener('click', () => goTo(cur+1));
+
+// ══════════════════════════════
+// TIMER
+// ══════════════════════════════
+let iv=null, secs_t=0, running=false;
+const disp = document.getElementById('timer-display');
+const bStart = document.getElementById('btn-start');
+const bReset = document.getElementById('btn-reset');
+function fmt(s){return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;}
+bStart.addEventListener('click',()=>{
+  if(running){clearInterval(iv);running=false;bStart.textContent='▶ Start';}
+  else{iv=setInterval(()=>{secs_t++;disp.textContent=fmt(secs_t);},1000);running=true;bStart.textContent='⏸ Pause';}
+});
+bReset.addEventListener('click',()=>{clearInterval(iv);running=false;secs_t=0;disp.textContent='00:00';bStart.textContent='▶ Start';});
+
+// ══════════════════════════════
+// WARM-UP
+// ══════════════════════════════
+function revealBlank(id, val, ruleId) {
+  const el = document.getElementById(id);
+  el.textContent = val;
+  el.classList.add('revealed');
+}
+function revealAll(blankId, ruleId, btnId) {
+  const vals = {wb0:10, wb1:2};
+  revealBlank(blankId, vals[blankId], ruleId);
+  document.getElementById(ruleId).classList.add('show');
+  const btn = document.getElementById(btnId);
+  btn.textContent = '✓ Shown'; btn.classList.add('done');
+}
+
+// ══════════════════════════════
+// PATTERN REVEAL
+// ══════════════════════════════
+function solvePattern(blankId, val, opIds, opLabel, chipId) {
+  const el = document.getElementById(blankId);
+  el.textContent = val; el.classList.add('solved');
+  opIds.forEach(id => { const op = document.getElementById(id); op.textContent = opLabel; op.classList.add('show'); });
+}
+function revealChip(chipId, label) {
+  const c = document.getElementById(chipId);
+  c.textContent = label; c.classList.add('revealed');
+}
+
+// ══════════════════════════════
+// RELATIONAL THINKING
+// ══════════════════════════════
+function checkRT(inputId, ans, fbId, hintId, rhs, successMsg) {
+  const val = parseFloat(document.getElementById(inputId).value);
+  const fb = document.getElementById(fbId);
+  if(isNaN(val)) { fb.textContent = '⚠ Enter a number first.'; fb.className='rt-feedback show err'; return; }
+  if(val===ans) {
+    fb.textContent = '✅ ' + successMsg;
+    fb.className = 'rt-feedback show ok';
+    document.getElementById(inputId).style.borderColor = 'var(--teal)';
+    // disable the button
+    const btns = document.querySelectorAll('button.check-btn');
+    btns.forEach(b => { if(b.getAttribute('onclick') && b.getAttribute('onclick').includes(fbId)) b.disabled=true; });
+  } else {
+    fb.textContent = `❌ Try again! The right side equals ${rhs} — what do you need on the left?`;
+    fb.className = 'rt-feedback show err';
+    document.getElementById(inputId).style.borderColor = 'var(--rose)';
+  }
+}
+
+// ══════════════════════════════
+// FUNCTION MACHINES
+// ══════════════════════════════
+function revealMachine(ruleId, label, fbId) {
+  const el = document.getElementById(ruleId);
+  el.textContent = label; el.classList.add('show-rule','locked');
+  const fb = document.getElementById(fbId);
+  fb.textContent = `✅ Rule revealed: Input ${label} = Output`;
+  fb.className = 'rt-feedback show ok';
+}
+function checkMachineGuess(inputId, fbId, correct, aliases) {
+  const val = document.getElementById(inputId).value.trim().toLowerCase().replace(/\s/g,'');
+  const norm = correct.toLowerCase().replace(/\s/g,'');
+  const match = val===norm || aliases.some(a=>a.toLowerCase().replace(/\s/g,'')=== val);
+  const fb = document.getElementById(fbId);
+  if(match) {
+    fb.textContent = `✅ Correct! The rule is ${correct} — every input is multiplied by 3.`;
+    fb.className = 'rt-feedback show ok';
+    document.getElementById('mr1').textContent = correct;
+    document.getElementById('mr1').classList.add('show-rule','locked');
+  } else {
+    fb.textContent = `❌ Not quite. Look at 2→6, 5→15: what did we do to 2 to get 6?`;
+    fb.className = 'rt-feedback show err';
+  }
+}
+
+// Machine 2 build
+const m2Inputs = [{i:3,o:15},{i:7,o:35},{i:4,o:20},{i:9,o:45}];
+const m2Container = document.getElementById('m2-pairs');
+m2Inputs.forEach((pair,idx) => {
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;gap:12px;flex-wrap:wrap;';
+  row.innerHTML = `
+    <div style="font-family:var(--serif);font-size:20px;padding:6px 14px;background:var(--bg);border:1px solid var(--border);border-radius:6px;min-width:44px;text-align:center;">${pair.i}</div>
+    <span style="color:var(--muted);">→ × 5 →</span>
+    <input class="unknown-input" id="m2-${idx}" maxlength="4" placeholder="?" style="width:64px;" />
+  `;
+  m2Container.appendChild(row);
+});
+function checkM2() {
+  let allOk = true;
+  m2Inputs.forEach((pair,idx) => {
+    const inp = document.getElementById(`m2-${idx}`);
+    const val = parseInt(inp.value);
+    if(val===pair.o) { inp.style.borderColor='var(--teal)'; }
+    else { inp.style.borderColor='var(--rose)'; allOk=false; }
+  });
+  const fb = document.getElementById('m2-fb');
+  if(allOk) { fb.textContent='✅ All correct! 3×5=15, 7×5=35, 4×5=20, 9×5=45'; fb.className='rt-feedback show ok'; }
+  else { fb.textContent='❌ Some are wrong — red borders show which. Remember: multiply each input by 5.'; fb.className='rt-feedback show err'; }
+}
+
+// ══════════════════════════════
+// WHITEBOARD
+// ══════════════════════════════
+const canvas = document.getElementById('wb');
+const ctx = canvas.getContext('2d');
+let wbTool='pen', wbColor='#e8eaf6', wbSize=2, drawing=false, lx=0, ly=0;
+let strokes=[], curStroke=null;
+
+function resizeWB() {
+  const w = canvas.offsetWidth;
+  const img = ctx.getImageData(0,0,canvas.width,canvas.height);
+  canvas.width=w; canvas.height=500;
+  ctx.putImageData(img,0,0);
+}
+function pos(e) {
+  const r=canvas.getBoundingClientRect(), sx=canvas.width/r.width, sy=canvas.height/r.height;
+  const src=e.touches?e.touches[0]:e;
+  return [(src.clientX-r.left)*sx,(src.clientY-r.top)*sy];
+}
+function startD(e){e.preventDefault();drawing=true;[lx,ly]=pos(e);curStroke={tool:wbTool,color:wbColor,size:wbSize,pts:[[lx,ly]]};}
+function doD(e){
+  if(!drawing)return;e.preventDefault();
+  const[x,y]=pos(e);
+  ctx.beginPath();ctx.lineWidth=wbTool==='eraser'?wbSize*6:wbSize;
+  ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.strokeStyle=wbTool==='eraser'?'#10121f':wbColor;
+  ctx.globalCompositeOperation=wbTool==='eraser'?'destination-out':'source-over';
+  ctx.moveTo(lx,ly);ctx.lineTo(x,y);ctx.stroke();
+  curStroke.pts.push([x,y]);[lx,ly]=[x,y];
+}
+function endD(){if(!drawing)return;drawing=false;ctx.globalCompositeOperation='source-over';if(curStroke){strokes.push(curStroke);curStroke=null;}}
+
+canvas.addEventListener('mousedown',startD);canvas.addEventListener('mousemove',doD);
+canvas.addEventListener('mouseup',endD);canvas.addEventListener('mouseleave',endD);
+canvas.addEventListener('touchstart',startD,{passive:false});canvas.addEventListener('touchmove',doD,{passive:false});
+canvas.addEventListener('touchend',endD);
+
+canvas.addEventListener('click',e=>{
+  if(wbTool!=='text')return;
+  const[x,y]=pos(e);
+  const txt=prompt('Enter text:');if(!txt)return;
+  ctx.font=`${14+wbSize*2}px 'IBM Plex Mono',monospace`;
+  ctx.fillStyle=wbColor;ctx.globalCompositeOperation='source-over';
+  ctx.fillText(txt,x,y);
+});
+
+function setTool(id){
+  ['tool-pen','tool-eraser','tool-text'].forEach(t=>document.getElementById(t).classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+document.getElementById('tool-pen').addEventListener('click',()=>{wbTool='pen';setTool('tool-pen');canvas.style.cursor='crosshair';});
+document.getElementById('tool-eraser').addEventListener('click',()=>{wbTool='eraser';setTool('tool-eraser');canvas.style.cursor='cell';});
+document.getElementById('tool-text').addEventListener('click',()=>{wbTool='text';setTool('tool-text');canvas.style.cursor='text';});
+
+document.querySelectorAll('.cswatch').forEach(sw=>{
+  sw.addEventListener('click',()=>{
+    document.querySelectorAll('.cswatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active');wbColor=sw.dataset.c;
+    wbTool='pen';setTool('tool-pen');canvas.style.cursor='crosshair';
+  });
+});
+document.querySelectorAll('.sz-btn').forEach(sb=>{
+  sb.addEventListener('click',()=>{
+    document.querySelectorAll('.sz-btn').forEach(s=>s.classList.remove('active'));
+    sb.classList.add('active');wbSize=+sb.dataset.sz;
+  });
+});
+document.getElementById('wb-clear').addEventListener('click',()=>{
+  if(!confirm('Clear the whiteboard?'))return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);strokes=[];
+});
+document.getElementById('wb-undo').addEventListener('click',()=>{
+  strokes.pop();ctx.clearRect(0,0,canvas.width,canvas.height);
+  strokes.forEach(s=>{
+    ctx.beginPath();ctx.lineWidth=s.size;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.strokeStyle=s.color;ctx.globalCompositeOperation='source-over';
+    s.pts.forEach(([x,y],i)=>i===0?ctx.moveTo(x,y):ctx.lineTo(x,y));ctx.stroke();
+  });
+});
+
+document.querySelectorAll('#wb-prompts [data-stamp]').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    goTo(3);
+    const txt=chip.dataset.stamp;
+    setTimeout(()=>{
+      ctx.font="16px 'IBM Plex Mono',monospace";
+      ctx.fillStyle=wbColor;ctx.globalCompositeOperation='source-over';
+      const y=60+strokes.length*8;
+      ctx.fillText('📌 '+txt,20,Math.min(y,460));
+    },150);
+  });
+});
+
+// ══════════════════════════════
+// QUIZ
+// ══════════════════════════════
+const quizData=[
+  {q:"What is the next term in the pattern: 2, 4, 8, 16, ___?",opts:["18","24","32","20"],ans:2,fb:"16 × 2 = 32. The rule is multiply by 2 each time. ✓"},
+  {q:"The rule for a pattern is 'Divide by 3'. The third term is 9. What is the fourth term?",opts:["6","3","27","12"],ans:1,fb:"9 ÷ 3 = 3. Dividing by 3 each time shrinks the pattern. ✓"},
+  {q:"Which of these shows a MULTIPLICATIVE pattern (not additive)?",opts:["5, 10, 15, 20","3, 9, 27, 81","4, 8, 12, 16","2, 4, 6, 8"],ans:1,fb:"3, 9, 27, 81 — each term is multiplied by 3. The others add a fixed amount. ✓"},
+  {q:"Solve: 5 × ? = 4 × 10",opts:["6","7","8","9"],ans:2,fb:"4 × 10 = 40, so 5 × ? = 40, meaning ? = 40 ÷ 5 = 8. ✓"},
+  {q:"Why is knowing the RULE better than just guessing the next number?",opts:["It's faster","It lets you find any term in the pattern, not just the next one","Rules are always about multiplication","Because guessing is not allowed"],ans:1,fb:"Knowing the rule means you can calculate the 10th, 100th, or any term — you're not limited to working term by term. ✓"},
+];
+
+let qAnswered=0;
+const qContainer=document.getElementById('quiz-container');
+const qScore=document.getElementById('quiz-score');
+
+quizData.forEach((item,qi)=>{
+  const card=document.createElement('div');card.className='qcard';
+  const opts=item.opts.map((o,oi)=>`<div class="q-opt" data-qi="${qi}" data-oi="${oi}">${String.fromCharCode(65+oi)}. ${o}</div>`).join('');
+  card.innerHTML=`<div class="q-text">Q${qi+1}. ${item.q}</div><div class="q-opts">${opts}</div><div class="q-fb" id="qfb-${qi}"></div>`;
+  qContainer.appendChild(card);
+});
+
+qContainer.addEventListener('click',e=>{
+  const opt=e.target.closest('.q-opt');if(!opt)return;
+  const qi=+opt.dataset.qi,oi=+opt.dataset.oi;
+  const card=opt.closest('.qcard');if(card.classList.contains('answered'))return;
+  card.classList.add('answered');
+  card.querySelectorAll('.q-opt')[quizData[qi].ans].classList.add('correct');
+  if(oi!==quizData[qi].ans)opt.classList.add('wrong');
+  const fb=document.getElementById(`qfb-${qi}`);
+  fb.textContent=(oi===quizData[qi].ans?'✅ ':'❌ Not quite. ')+quizData[qi].fb;
+  fb.className='q-fb show '+(oi===quizData[qi].ans?'ok':'err');
+  qAnswered++;
+  if(qAnswered===quizData.length){
+    const correct=document.querySelectorAll('.q-opt.correct:not(.wrong)').length;
+    qScore.style.display='block';
+    qScore.innerHTML=`🌟 ${correct} / ${quizData.length}<br><span style="font-size:16px;font-family:var(--mono);color:var(--muted);">Session 1 complete!</span>`;
+  }
+});
+
+// ══════════════════════════════
+// INIT
+// ══════════════════════════════
+window.addEventListener('load',()=>{resizeWB();goTo(0);});
+window.addEventListener('resize',resizeWB);
+</script>
+</body>
+</html>

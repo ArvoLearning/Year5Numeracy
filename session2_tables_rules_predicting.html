@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 2 — Tables, Rules & Predicting Future Terms</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #faf6ef;
+  --paper: #f2ece0;
+  --tan: #e8dfc8;
+  --ink: #1e1a14;
+  --ink2: #3d3629;
+  --muted: #8c7e68;
+  --border: #d4c9b0;
+  --pine: #1a5c3a;
+  --pine-light: rgba(26,92,58,0.1);
+  --amber: #c97d20;
+  --amber-light: rgba(201,125,32,0.12);
+  --sky: #1a5878;
+  --sky-light: rgba(26,88,120,0.1);
+  --rose: #b03040;
+  --rose-light: rgba(176,48,64,0.09);
+  --serif: 'Playfair Display', serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--mono);
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* subtle ruled lines background */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: repeating-linear-gradient(
+    0deg, transparent, transparent 27px, rgba(180,165,140,0.18) 27px, rgba(180,165,140,0.18) 28px
+  );
+}
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 300;
+  background: var(--ink);
+  border-bottom: 4px solid var(--amber);
+  padding: 14px 28px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.hd-left { display: flex; flex-direction: column; gap: 3px; }
+.hd-eye { font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--muted); }
+.hd-title { font-family: var(--serif); font-size: 18px; color: var(--cream); font-weight: 700; letter-spacing: -0.01em; }
+
+.timer-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.timer-lbl { font-size: 9px; color: var(--muted); letter-spacing: 0.18em; text-transform: uppercase; }
+#timer-display {
+  font-family: var(--serif); font-size: 26px; font-style: italic;
+  color: var(--amber); min-width: 70px; text-align: center;
+}
+.t-btn {
+  background: none; border: 1px solid #444; color: #888;
+  font-family: var(--mono); font-size: 10px; padding: 5px 10px; border-radius: 3px;
+  cursor: pointer; transition: all .15s;
+}
+.t-btn:hover { border-color: var(--amber); color: var(--amber); }
+
+/* ── TABS ── */
+nav {
+  display: flex; background: var(--paper);
+  border-bottom: 2px solid var(--border); overflow-x: auto; scrollbar-width: none;
+  position: relative; z-index: 200;
+}
+nav::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 12px 18px; font-size: 11px; font-family: var(--mono);
+  cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent;
+  color: var(--muted); transition: all .2s; user-select: none;
+  display: flex; align-items: center; gap: 7px;
+}
+.tab:hover { color: var(--ink2); }
+.tab.active { color: var(--pine); border-bottom-color: var(--pine); background: var(--cream); }
+.pill {
+  font-size: 9px; background: var(--tan); color: var(--muted);
+  padding: 1px 7px; border-radius: 20px;
+}
+.tab.active .pill { background: var(--pine); color: #fff; }
+
+/* ── MAIN ── */
+main {
+  max-width: 1000px; margin: 0 auto;
+  padding: 30px 22px 90px;
+  position: relative; z-index: 1;
+}
+
+.section { display: none; animation: slideIn .3s ease; }
+.section.active { display: block; }
+@keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* progress */
+.prog-wrap { height: 4px; background: var(--tan); border-radius: 20px; margin-bottom: 26px; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(--pine), var(--amber)); border-radius: 20px; transition: width .4s ease; }
+
+/* section header */
+.sec-head { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+.badge {
+  flex-shrink: 0; width: 52px; height: 52px; border-radius: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; border: 2px solid; font-family: var(--serif);
+  font-weight: 900; font-style: italic;
+}
+.badge.pine { background: var(--pine-light); border-color: var(--pine); color: var(--pine); }
+.badge.amber { background: var(--amber-light); border-color: var(--amber); color: var(--amber); }
+.badge.sky { background: var(--sky-light); border-color: var(--sky); color: var(--sky); }
+.badge.rose { background: var(--rose-light); border-color: var(--rose); color: var(--rose); }
+.badge.ink { background: var(--tan); border-color: var(--ink2); color: var(--ink2); }
+
+.sec-meta h2 { font-family: var(--serif); font-size: 23px; color: var(--ink); line-height: 1.2; }
+.sec-meta .sub { font-size: 10px; color: var(--muted); margin-top: 4px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* card */
+.card {
+  background: #fff; border: 1.5px solid var(--border);
+  border-radius: 4px; padding: 20px 22px; margin-bottom: 16px;
+  box-shadow: 2px 2px 0 var(--tan);
+  position: relative;
+}
+.card-label {
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--pine); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-label::before { content:''; display:block; width:18px; height:1.5px; background:currentColor; }
+.card-label.amber { color: var(--amber); }
+.card-label.amber::before { background: var(--amber); }
+.card-label.sky { color: var(--sky); }
+.card-label.sky::before { background: var(--sky); }
+.card-label.rose { color: var(--rose); }
+.card-label.rose::before { background: var(--rose); }
+
+/* two col */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 620px) { .two-col { grid-template-columns: 1fr; } }
+
+/* prose */
+.prose { font-size: 13px; line-height: 1.85; color: var(--ink2); }
+.prose strong { color: var(--pine); font-weight: 700; }
+.prose em { color: var(--amber); font-style: normal; font-weight: 600; }
+
+/* callout */
+.callout {
+  padding: 12px 16px; border-radius: 3px; font-size: 13px; line-height: 1.7;
+  margin: 12px 0; border-left: 3px solid;
+}
+.callout.pine { border-color: var(--pine); background: var(--pine-light); }
+.callout.amber { border-color: var(--amber); background: var(--amber-light); }
+.callout.sky { border-color: var(--sky); background: var(--sky-light); }
+.callout.rose { border-color: var(--rose); background: var(--rose-light); }
+
+/* ── WARM-UP sequence spotter ── */
+.seq-display {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin: 12px 0;
+}
+.snum {
+  font-family: var(--serif); font-size: 26px; font-weight: 700;
+  padding: 8px 14px; background: var(--paper); border: 1.5px solid var(--border);
+  border-radius: 3px; min-width: 50px; text-align: center;
+}
+.snum.hi { border-color: var(--pine); color: var(--pine); background: var(--pine-light); }
+.sarr { color: var(--muted); font-size: 18px; }
+
+.rule-reveal-box {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px;
+}
+.rule-input {
+  padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 3px;
+  font-family: var(--mono); font-size: 13px; background: var(--paper);
+  width: 200px; transition: border-color .2s; color: var(--ink);
+}
+.rule-input:focus { outline: none; border-color: var(--pine); }
+.check-btn {
+  padding: 8px 18px; border-radius: 3px; font-family: var(--mono); font-size: 11px;
+  cursor: pointer; background: var(--ink); color: var(--cream); border: none;
+  transition: all .2s; letter-spacing: 0.05em;
+}
+.check-btn:hover { background: var(--pine); }
+.check-btn:disabled { background: var(--pine); cursor: default; }
+.reveal-link {
+  font-size: 11px; color: var(--muted); cursor: pointer; text-decoration: underline;
+  border: none; background: none; font-family: var(--mono);
+}
+.reveal-link:hover { color: var(--amber); }
+.fb-msg { font-size: 12px; margin-top: 6px; padding: 6px 10px; border-radius: 3px; display: none; }
+.fb-msg.show { display: block; }
+.fb-msg.ok { background: var(--pine-light); color: var(--pine); }
+.fb-msg.err { background: var(--rose-light); color: var(--rose); }
+
+/* ── TABLES ── */
+.pat-table {
+  border-collapse: collapse; width: 100%; font-size: 13px;
+  margin: 10px 0;
+}
+.pat-table th {
+  background: var(--ink); color: var(--cream); padding: 10px 16px;
+  text-align: center; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  font-family: var(--mono);
+}
+.pat-table td {
+  border: 1.5px solid var(--border); padding: 10px 16px; text-align: center;
+  font-family: var(--serif); font-size: 18px; font-weight: 700;
+  background: #fff;
+}
+.pat-table td.pos { font-family: var(--mono); font-size: 13px; font-weight: 400; background: var(--paper); }
+.pat-table td.blank {
+  color: var(--muted); cursor: pointer; border-style: dashed; transition: all .2s;
+}
+.pat-table td.blank:hover { border-color: var(--amber); color: var(--amber); }
+.pat-table td.filled { color: var(--pine); border-color: var(--pine); border-style: solid; }
+.pat-table td.predicted { color: var(--sky); border-color: var(--sky); background: var(--sky-light); }
+
+/* n-box for position */
+.n-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ink); color: var(--cream); font-family: var(--mono); font-size: 11px;
+  font-weight: 700;
+}
+
+/* rule display */
+.rule-box {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  gap: 12px; padding: 14px 18px; background: var(--amber-light);
+  border: 1.5px solid var(--amber); border-radius: 3px; margin: 14px 0;
+}
+.rule-box .rule-words { font-size: 15px; font-family: var(--serif); font-style: italic; color: var(--ink); }
+.rule-box .rule-formula {
+  font-family: var(--mono); font-size: 13px;
+  background: var(--ink); color: var(--amber); padding: 4px 12px; border-radius: 3px;
+}
+
+/* ── FUNCTION MACHINE ── */
+.fm-outer {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; flex-wrap: wrap; margin: 18px 0;
+}
+.fm-in-col, .fm-out-col {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.fm-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; text-align: center; margin-bottom: 4px; }
+.fm-cell {
+  font-family: var(--serif); font-size: 20px; font-weight: 700;
+  padding: 8px 18px; background: var(--paper); border: 1.5px solid var(--border);
+  border-radius: 3px; text-align: center; min-width: 56px;
+}
+.fm-cell.out { color: var(--pine); border-color: var(--pine); }
+.fm-cell.out-blank { color: var(--muted); border-style: dashed; cursor: pointer; }
+.fm-cell.out-blank:hover { border-color: var(--amber); color: var(--amber); }
+.fm-cell.out-ok { color: var(--pine); border-color: var(--pine); }
+.fm-pipe {
+  display: flex; align-items: center; padding: 0 4px;
+  padding-top: 22px; /* offset for label */
+}
+.fm-pipe svg { width: 32px; }
+.fm-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: #fff; border: 2px solid var(--pine);
+  border-radius: 6px; padding: 16px 22px; margin: 0 8px;
+  box-shadow: 3px 3px 0 var(--pine-light);
+  min-width: 110px; min-height: 80px;
+}
+.fm-box-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .15em; margin-bottom: 6px; }
+.fm-box-rule {
+  font-family: var(--serif); font-size: 18px; font-style: italic; font-weight: 700;
+  color: var(--pine); border-bottom: 2px dashed var(--border); min-width: 70px;
+  text-align: center; padding: 4px 0; cursor: pointer; transition: all .2s;
+}
+.fm-box-rule:hover { border-color: var(--amber); }
+.fm-box-rule.locked { cursor: default; border-style: solid; border-color: var(--pine); }
+
+/* ── INTERACTIVE TABLE BUILDER ── */
+.tbl-builder { }
+.tbl-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.tbl-cell-inp {
+  width: 72px; padding: 8px; border: 1.5px solid var(--border); border-radius: 3px;
+  font-family: var(--serif); font-size: 18px; text-align: center; background: var(--paper);
+  font-weight: 700; color: var(--ink); transition: border-color .2s;
+}
+.tbl-cell-inp:focus { outline: none; border-color: var(--pine); }
+.tbl-cell-inp.correct { border-color: var(--pine); background: var(--pine-light); color: var(--pine); }
+.tbl-cell-inp.wrong { border-color: var(--rose); background: var(--rose-light); }
+.tbl-pos-lbl {
+  font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 18px; text-align: right;
+}
+.verify-btn {
+  padding: 8px 18px; border-radius: 3px; font-family: var(--mono); font-size: 11px;
+  cursor: pointer; background: var(--pine); color: #fff; border: none;
+  transition: all .2s; margin-top: 8px; letter-spacing: 0.05em;
+}
+.verify-btn:hover { background: #0f3d24; }
+
+/* ── PREDICTION CHALLENGE ── */
+.challenge-card {
+  background: #fff; border: 1.5px solid var(--border); border-radius: 4px;
+  padding: 20px 22px; margin-bottom: 16px;
+  box-shadow: 3px 3px 0 var(--tan); position: relative;
+}
+.challenge-card::before {
+  content: attr(data-step);
+  position: absolute; top: -12px; left: 16px;
+  background: var(--amber); color: #fff; font-family: var(--mono); font-size: 10px;
+  padding: 2px 10px; border-radius: 2px; letter-spacing: 0.1em;
+}
+.pred-inputs { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
+.pred-field { display: flex; flex-direction: column; gap: 5px; }
+.pred-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted); }
+.pred-input {
+  padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 3px;
+  font-family: var(--serif); font-size: 18px; font-weight: 700;
+  background: var(--paper); color: var(--ink); width: 100px; text-align: center;
+  transition: border-color .2s;
+}
+.pred-input:focus { outline: none; border-color: var(--sky); }
+.pred-input.ok { border-color: var(--pine); background: var(--pine-light); color: var(--pine); }
+.pred-input.err { border-color: var(--rose); background: var(--rose-light); color: var(--rose); }
+.pred-check { padding: 9px 20px; border-radius: 3px; font-family: var(--mono); font-size: 11px;
+  cursor: pointer; background: var(--sky); color: #fff; border: none;
+  transition: all .2s; align-self: flex-end; letter-spacing: 0.05em; }
+.pred-check:hover { background: #0e3d5a; }
+.pred-fb { font-size: 12px; margin-top: 8px; padding: 7px 12px; border-radius: 3px; display: none; }
+.pred-fb.show { display: block; }
+.pred-fb.ok { background: var(--pine-light); color: var(--pine); }
+.pred-fb.err { background: var(--rose-light); color: var(--rose); }
+
+/* step tag */
+.step-list { list-style: none; counter-reset: sl; }
+.step-list li {
+  counter-increment: sl; display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start;
+  font-size: 13px; line-height: 1.7; color: var(--ink2);
+}
+.step-list li::before {
+  content: counter(sl);
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--ink); color: var(--cream); font-family: var(--mono); font-size: 11px;
+  display: flex; align-items: center; justify-content: center; margin-top: 2px;
+}
+
+/* ── WHITEBOARD ── */
+.wb-toolbar {
+  display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
+  padding: 10px 14px; background: var(--paper); border: 1.5px solid var(--border);
+  border-radius: 3px 3px 0 0; border-bottom: none;
+}
+.wb-btn {
+  padding: 6px 12px; background: #fff; border: 1.5px solid var(--border);
+  border-radius: 3px; font-family: var(--mono); font-size: 11px; color: var(--muted);
+  cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 5px;
+}
+.wb-btn:hover { border-color: var(--ink); color: var(--ink); }
+.wb-btn.active { background: var(--ink); color: var(--cream); border-color: var(--ink); font-weight: 700; }
+.wb-btn.danger { color: var(--rose); }
+.wb-btn.danger:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
+.cswatch {
+  width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+  border: 2.5px solid transparent; transition: transform .15s; flex-shrink: 0;
+}
+.cswatch:hover { transform: scale(1.2); }
+.cswatch.active { border-color: var(--ink); }
+.wb-sep { width: 1px; height: 26px; background: var(--border); }
+.sz-btn {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 3px; border: 1.5px solid var(--border); background: #fff;
+  transition: all .15s;
+}
+.sz-btn:hover { border-color: var(--ink); }
+.sz-btn.active { border-color: var(--pine); background: var(--pine-light); }
+.sz-dot { border-radius: 50%; background: var(--ink2); display: block; }
+.sz-btn.active .sz-dot { background: var(--pine); }
+canvas#wb {
+  display: block; width: 100%;
+  border: 1.5px solid var(--border); border-top: none; border-radius: 0 0 3px 3px;
+  background: #fff; cursor: crosshair; touch-action: none;
+}
+
+/* ── QUIZ ── */
+.qcard {
+  background: #fff; border: 1.5px solid var(--border); border-radius: 4px;
+  padding: 20px 22px; margin-bottom: 14px;
+  box-shadow: 2px 2px 0 var(--tan);
+}
+.q-text { font-size: 14px; line-height: 1.7; margin-bottom: 14px; font-family: var(--serif); }
+.q-opts { display: flex; flex-direction: column; gap: 7px; }
+.q-opt {
+  padding: 9px 16px; border: 1.5px solid var(--border); border-radius: 3px;
+  cursor: pointer; font-size: 13px; transition: all .2s; background: var(--paper);
+}
+.q-opt:hover { border-color: var(--amber); color: var(--amber); }
+.q-opt.correct { border-color: var(--pine); background: var(--pine-light); color: var(--pine); }
+.q-opt.wrong { border-color: var(--rose); background: var(--rose-light); color: var(--rose); }
+.q-fb { font-size: 12px; margin-top: 9px; padding: 8px 12px; border-radius: 3px; display: none; }
+.q-fb.show { display: block; }
+.q-fb.ok { background: var(--pine-light); color: var(--pine); }
+.q-fb.err { background: var(--rose-light); color: var(--rose); }
+#quiz-score {
+  display: none; text-align: center; padding: 28px; font-family: var(--serif);
+  font-size: 38px; font-style: italic; color: var(--pine);
+}
+
+/* ── FOOTER NAV ── */
+.footer-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: rgba(250,246,239,0.97); backdrop-filter: blur(8px);
+  border-top: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 28px;
+}
+.nav-btn {
+  padding: 10px 22px; border-radius: 3px; font-family: var(--mono); font-size: 12px;
+  cursor: pointer; border: 1.5px solid; transition: all .2s; font-weight: 700;
+}
+.nav-prev { background: #fff; color: var(--ink2); border-color: var(--border); }
+.nav-prev:hover:not(:disabled) { border-color: var(--ink); }
+.nav-prev:disabled { opacity: .35; cursor: default; }
+.nav-next { background: var(--pine); color: #fff; border-color: var(--pine); }
+.nav-next:hover { background: #0f3d24; }
+.sec-ind { font-size: 10px; color: var(--muted); text-align: center; letter-spacing: 0.08em; }
+
+/* chip */
+.chip-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.chip {
+  padding: 5px 12px; border-radius: 20px; font-size: 11px;
+  border: 1px solid var(--border); color: var(--muted); background: var(--paper);
+  cursor: pointer; transition: all .2s; user-select: none;
+}
+.chip:hover { border-color: var(--pine); color: var(--pine); }
+.chip.sel { background: var(--pine); color: #fff; border-color: var(--pine); }
+
+.mt { margin-top: 12px; }
+.mb { margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="hd-left">
+    <span class="hd-eye">Year 5 · Mathematics · Patterns &amp; Algebra</span>
+    <div class="hd-title">Session 2 — Tables, Rules &amp; Predicting Future Terms</div>
+  </div>
+  <div class="timer-wrap">
+    <span class="timer-lbl">Session Timer</span>
+    <div id="timer-display">00:00</div>
+    <button class="t-btn" id="btn-start">▶ Start</button>
+    <button class="t-btn" id="btn-reset">↺</button>
+  </div>
+</header>
+
+<!-- TABS -->
+<nav>
+  <div class="tab active" data-tab="0">🔍 Warm-up <span class="pill">5 min</span></div>
+  <div class="tab" data-tab="1">📋 Introduction <span class="pill">10 min</span></div>
+  <div class="tab" data-tab="2">⚙️ Function Machines <span class="pill">15 min</span></div>
+  <div class="tab" data-tab="3">🎨 Whiteboard</div>
+  <div class="tab" data-tab="4">🎯 Prediction Challenge <span class="pill">15 min</span></div>
+  <div class="tab" data-tab="5">✅ Wrap-up Quiz <span class="pill">5 min</span></div>
+</nav>
+
+<main>
+  <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:16.66%"></div></div>
+
+  <!-- ══════════════════════════ -->
+  <!-- TAB 0: WARM-UP            -->
+  <!-- ══════════════════════════ -->
+  <div class="section active" id="tab-0">
+    <div class="sec-head">
+      <div class="badge pine">🔍</div>
+      <div class="sec-meta">
+        <h2>Warm-up — Pattern Spotting</h2>
+        <div class="sub">5 minutes · Identify additive rules</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Sequence A</div>
+      <div class="seq-display">
+        <div class="snum">1</div><div class="sarr">→</div>
+        <div class="snum">3</div><div class="sarr">→</div>
+        <div class="snum">5</div><div class="sarr">→</div>
+        <div class="snum">7</div><div class="sarr">→</div>
+        <div class="snum hi">___</div>
+      </div>
+      <div class="prose mb">What is the rule for this sequence? Type it below, then check!</div>
+      <div class="rule-reveal-box">
+        <input class="rule-input" id="ruleA" placeholder='e.g. "Add 2"' />
+        <button class="check-btn" onclick="checkWarmup('ruleA','wfbA','add 2',['add2','+2','plus 2','plus2'],'Add 2 each time — the next term is 9!')">Check</button>
+        <button class="reveal-link" onclick="revealWarmup('ruleA','wfbA','Add 2','Add 2 each time — the next term is 9! (1, 3, 5, 7, 9...)')">Reveal</button>
+      </div>
+      <div class="fb-msg" id="wfbA"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Sequence B</div>
+      <div class="seq-display">
+        <div class="snum">5</div><div class="sarr">→</div>
+        <div class="snum">10</div><div class="sarr">→</div>
+        <div class="snum">15</div><div class="sarr">→</div>
+        <div class="snum">20</div><div class="sarr">→</div>
+        <div class="snum hi">___</div>
+      </div>
+      <div class="prose mb">Two rules work here — one additive, one linking position to value. What are they?</div>
+      <div class="rule-reveal-box">
+        <input class="rule-input" id="ruleB" placeholder='e.g. "Add 5"' />
+        <button class="check-btn" onclick="checkWarmup('ruleB','wfbB','add 5',['add5','+5','plus 5','times 5','multiply by 5','×5','x5'],'✓ Both work! Adding 5 each step, OR multiply the position number by 5 (position 1→5, 2→10...). The next term is 25.')">Check</button>
+        <button class="reveal-link" onclick="revealWarmup('ruleB','wfbB','Add 5','✓ Add 5 each step, OR multiply the position by 5. This dual view is what we explore today!')">Reveal</button>
+      </div>
+      <div class="fb-msg" id="wfbB"></div>
+    </div>
+
+    <div class="callout pine">
+      💡 <strong>Today's big idea:</strong> Instead of finding what to add each step, we'll find a rule that links the <em>position number</em> to the <em>term value</em> directly — so we can jump to any term instantly!
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ -->
+  <!-- TAB 1: INTRODUCTION       -->
+  <!-- ══════════════════════════ -->
+  <div class="section" id="tab-1">
+    <div class="sec-head">
+      <div class="badge amber">📋</div>
+      <div class="sec-meta">
+        <h2>Formalising Patterns with Tables</h2>
+        <div class="sub">10 minutes · Position number → Term value</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-label">What goes in a table?</div>
+        <div class="prose">
+          <p>A pattern table has two rows:</p>
+        </div>
+        <ul class="step-list mt">
+          <li><strong>Position (n)</strong> — which term it is: 1st, 2nd, 3rd…</li>
+          <li><strong>Term Value</strong> — the actual number in the sequence at that position.</li>
+        </ul>
+        <div class="callout amber mt">
+          The goal: find a <strong>single rule</strong> linking n to the term value. Then you can calculate <em>any</em> term without writing them all out!
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Example: 5, 10, 15, 20…</div>
+        <table class="pat-table">
+          <thead><tr><th>Position (n)</th><th>Term Value</th></tr></thead>
+          <tbody>
+            <tr><td class="pos">1</td><td>5</td></tr>
+            <tr><td class="pos">2</td><td>10</td></tr>
+            <tr><td class="pos">3</td><td>15</td></tr>
+            <tr><td class="pos">4</td><td>20</td></tr>
+          </tbody>
+        </table>
+        <div class="rule-box mt">
+          <span class="rule-words">"Multiply the position number by 5"</span>
+          <span class="rule-formula">5 × n</span>
+        </div>
+        <div class="prose" style="font-size:12px;">So the <strong>10th term</strong> = 5 × 10 = <em>50</em> — no need to list all terms!</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label sky">Two-step rules</div>
+      <div class="prose mb">Some patterns need two operations — multiply then add (or subtract). Example: 5, 7, 9, 11…</div>
+      <table class="pat-table mb">
+        <thead><tr><th>Position (n)</th><th>Term Value</th><th>How to see the rule</th></tr></thead>
+        <tbody>
+          <tr><td class="pos">1</td><td>5</td><td style="font-family:var(--mono);font-size:11px;background:#fff;">2×1 + 3 = 5 ✓</td></tr>
+          <tr><td class="pos">2</td><td>7</td><td style="font-family:var(--mono);font-size:11px;background:#fff;">2×2 + 3 = 7 ✓</td></tr>
+          <tr><td class="pos">3</td><td>9</td><td style="font-family:var(--mono);font-size:11px;background:#fff;">2×3 + 3 = 9 ✓</td></tr>
+          <tr><td class="pos">4</td><td>11</td><td style="font-family:var(--mono);font-size:11px;background:#fff;">2×4 + 3 = 11 ✓</td></tr>
+        </tbody>
+      </table>
+      <div class="rule-box">
+        <span class="rule-words">"Multiply position by 2, then add 3"</span>
+        <span class="rule-formula">2n + 3</span>
+      </div>
+      <div class="callout sky">
+        <strong>How to find a two-step rule:</strong> The difference between consecutive terms tells you the <em>multiplier</em>. Then check what you need to add/subtract to make it work for position 1.
+        <br>Here: difference = 2, so multiply by 2. Then 2×1 = 2, but we need 5, so add 3.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ -->
+  <!-- TAB 2: FUNCTION MACHINES  -->
+  <!-- ══════════════════════════ -->
+  <div class="section" id="tab-2">
+    <div class="sec-head">
+      <div class="badge sky">⚙️</div>
+      <div class="sec-meta">
+        <h2>Function Machines — Finding the Position Rule</h2>
+        <div class="sub">15 minutes · Build tables · Discover rules</div>
+      </div>
+    </div>
+
+    <!-- Machine 1: 3, 6, 9, 12 -->
+    <div class="card">
+      <div class="card-label">Machine 1 — Pattern: 3, 6, 9, 12…</div>
+      <div class="prose mb">The position number goes in. The term value comes out. What is the rule?</div>
+
+      <div class="fm-outer">
+        <div>
+          <div class="fm-lbl">Position (n)</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="fm-cell">1</div>
+            <div class="fm-cell">2</div>
+            <div class="fm-cell">3</div>
+            <div class="fm-cell">4</div>
+          </div>
+        </div>
+        <div class="fm-pipe">
+          <svg viewBox="0 0 32 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="0" y1="8" x2="24" y2="8" stroke="#d4c9b0" stroke-width="2"/>
+            <polygon points="24,4 32,8 24,12" fill="#d4c9b0"/>
+          </svg>
+        </div>
+        <div class="fm-box">
+          <div class="fm-box-lbl">Rule</div>
+          <div class="fm-box-rule" id="fm1-rule" onclick="revealFM('fm1-rule','× 3','fm1-fb')">?</div>
+        </div>
+        <div class="fm-pipe">
+          <svg viewBox="0 0 32 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="0" y1="8" x2="24" y2="8" stroke="#d4c9b0" stroke-width="2"/>
+            <polygon points="24,4 32,8 24,12" fill="#d4c9b0"/>
+          </svg>
+        </div>
+        <div>
+          <div class="fm-lbl">Term Value</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="fm-cell out">3</div>
+            <div class="fm-cell out">6</div>
+            <div class="fm-cell out">9</div>
+            <div class="fm-cell out">12</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px;">
+        <input class="rule-input" id="fm1-input" placeholder='Type rule e.g. "× 3"' style="width:180px;" />
+        <button class="check-btn" onclick="checkFM('fm1-input','fm1-fb','fm1-rule','× 3',['x3','*3','times3','multiply by 3','×3','mult by 3'])">Check</button>
+        <button class="reveal-link" onclick="revealFM('fm1-rule','× 3','fm1-fb')">Reveal</button>
+      </div>
+      <div class="fb-msg" id="fm1-fb"></div>
+
+      <div class="rule-box mt" id="fm1-rulebox" style="display:none;">
+        <span class="rule-words">"Multiply the position number by 3"</span>
+        <span class="rule-formula">3n</span>
+      </div>
+    </div>
+
+    <!-- Machine 2: 5, 7, 9, 11 — student fills outputs -->
+    <div class="card">
+      <div class="card-label amber">Machine 2 — Pattern: 5, 7, 9, 11… · Fill in the outputs!</div>
+      <div class="prose mb">The rule is <strong>2n + 3</strong>. Use it to complete the term values.</div>
+
+      <div class="fm-outer">
+        <div>
+          <div class="fm-lbl">Position (n)</div>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="fm2-inputs">
+            <div class="fm-cell">1</div>
+            <div class="fm-cell">2</div>
+            <div class="fm-cell">3</div>
+            <div class="fm-cell">4</div>
+            <div class="fm-cell">5</div>
+          </div>
+        </div>
+        <div class="fm-pipe">
+          <svg viewBox="0 0 32 16" fill="none"><line x1="0" y1="8" x2="24" y2="8" stroke="#d4c9b0" stroke-width="2"/><polygon points="24,4 32,8 24,12" fill="#d4c9b0"/></svg>
+        </div>
+        <div class="fm-box" style="border-color:var(--amber);">
+          <div class="fm-box-lbl">Rule</div>
+          <div class="fm-box-rule locked" style="border-color:var(--amber);color:var(--amber);">2n + 3</div>
+        </div>
+        <div class="fm-pipe">
+          <svg viewBox="0 0 32 16" fill="none"><line x1="0" y1="8" x2="24" y2="8" stroke="#d4c9b0" stroke-width="2"/><polygon points="24,4 32,8 24,12" fill="#d4c9b0"/></svg>
+        </div>
+        <div>
+          <div class="fm-lbl">Term Value — Fill in!</div>
+          <div style="display:flex;flex-direction:column;gap:6px;" id="fm2-outputs">
+            <input class="tbl-cell-inp" id="fm2o-1" placeholder="?" />
+            <input class="tbl-cell-inp" id="fm2o-2" placeholder="?" />
+            <input class="tbl-cell-inp" id="fm2o-3" placeholder="?" />
+            <input class="tbl-cell-inp" id="fm2o-4" placeholder="?" />
+            <input class="tbl-cell-inp" id="fm2o-5" placeholder="?" />
+          </div>
+        </div>
+      </div>
+      <button class="verify-btn mt" onclick="checkFM2()">Check All Outputs</button>
+      <div class="fb-msg mt" id="fm2-fb"></div>
+    </div>
+
+    <!-- Machine 3: student identifies rule from pairs -->
+    <div class="card">
+      <div class="card-label rose">Machine 3 — What's the rule? Build the table yourself!</div>
+      <div class="prose mb">Pattern: <strong>4, 8, 12, 16…</strong> — Create the table below and identify the rule.</div>
+
+      <div style="overflow-x:auto;">
+        <table class="pat-table mb" id="m3-table">
+          <thead><tr><th>Position (n)</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="pos">Term Value</td>
+              <td><input class="tbl-cell-inp" id="m3v1" placeholder="?" style="width:62px;" /></td>
+              <td><input class="tbl-cell-inp" id="m3v2" placeholder="?" style="width:62px;" /></td>
+              <td><input class="tbl-cell-inp" id="m3v3" placeholder="?" style="width:62px;" /></td>
+              <td><input class="tbl-cell-inp" id="m3v4" placeholder="?" style="width:62px;" /></td>
+              <td><input class="tbl-cell-inp" id="m3v5" placeholder="?" style="width:62px;" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px;">
+        <input class="rule-input" id="m3-rule" placeholder='Rule in words e.g. "Multiply by 4"' style="width:220px;" />
+        <button class="check-btn" onclick="checkM3()">Check</button>
+      </div>
+      <div class="fb-msg mt" id="m3-fb"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ -->
+  <!-- TAB 3: WHITEBOARD         -->
+  <!-- ══════════════════════════ -->
+  <div class="section" id="tab-3">
+    <div class="sec-head">
+      <div class="badge ink">🎨</div>
+      <div class="sec-meta">
+        <h2>Whiteboard — Work Space</h2>
+        <div class="sub">Draw tables · Write rules · Show calculations</div>
+      </div>
+    </div>
+
+    <div class="wb-toolbar">
+      <button class="wb-btn active" id="tool-pen">✏ Pen</button>
+      <button class="wb-btn" id="tool-eraser">🧹 Eraser</button>
+      <button class="wb-btn" id="tool-text">T Text</button>
+      <div class="wb-sep"></div>
+      <div class="cswatch active" style="background:#1e1a14;" data-c="#1e1a14"></div>
+      <div class="cswatch" style="background:#1a5c3a;" data-c="#1a5c3a"></div>
+      <div class="cswatch" style="background:#c97d20;" data-c="#c97d20"></div>
+      <div class="cswatch" style="background:#1a5878;" data-c="#1a5878"></div>
+      <div class="cswatch" style="background:#b03040;" data-c="#b03040"></div>
+      <div class="cswatch" style="background:#7a4f9e;" data-c="#7a4f9e"></div>
+      <div class="wb-sep"></div>
+      <div class="sz-btn active" data-sz="2"><span class="sz-dot" style="width:4px;height:4px;"></span></div>
+      <div class="sz-btn" data-sz="5"><span class="sz-dot" style="width:8px;height:8px;"></span></div>
+      <div class="sz-btn" data-sz="12"><span class="sz-dot" style="width:14px;height:14px;"></span></div>
+      <div class="wb-sep"></div>
+      <button class="wb-btn" id="wb-undo">↩ Undo</button>
+      <button class="wb-btn danger" id="wb-clear">🗑 Clear</button>
+    </div>
+    <canvas id="wb" height="520"></canvas>
+
+    <div class="card mt">
+      <div class="card-label">Stamp a template onto the board</div>
+      <div class="chip-row" id="wb-stamps">
+        <span class="chip" data-stamp="Pattern: 3, 6, 9, 12...&#10;n  | 1 | 2 | 3 | 4 |&#10;TV | 3 | 6 | 9 |12 |&#10;Rule: ______________">Table ×3</span>
+        <span class="chip" data-stamp="Pattern: 4, 8, 12, 16...&#10;n  | 1 | 2 | 3 | 4 |&#10;TV | 4 | 8 |12 |16 |&#10;Rule: 4n">Table ×4</span>
+        <span class="chip" data-stamp="Pattern: 1, 5, 9, 13...&#10;n  | 1 | 2 | 3 | 4 |&#10;TV | 1 | 5 | 9 |13 |&#10;Rule: 4n - 3">Table 4n−3</span>
+        <span class="chip" data-stamp="10th term = rule × 10&#10;20th term = rule × 20">Prediction template</span>
+        <span class="chip" data-stamp="Difference between terms = multiplier&#10;Then check: multiplier × 1 + ? = first term">Find rule hint</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ -->
+  <!-- TAB 4: PREDICTION CHALLENGE -->
+  <!-- ══════════════════════════ -->
+  <div class="section" id="tab-4">
+    <div class="sec-head">
+      <div class="badge rose">🎯</div>
+      <div class="sec-meta">
+        <h2>Pattern Prediction Challenge</h2>
+        <div class="sub">15 minutes · Find rules · Predict far-away terms</div>
+      </div>
+    </div>
+
+    <div class="callout pine mb">
+      For each pattern: <strong>1.</strong> Complete the table &nbsp;|&nbsp; <strong>2.</strong> Identify the rule &nbsp;|&nbsp; <strong>3.</strong> Predict the 10th and 20th terms.
+    </div>
+
+    <!-- Challenge 1: 4, 8, 12, 16 → 4n -->
+    <div class="challenge-card" data-step="CHALLENGE 1">
+      <div class="card-label amber">Pattern: 4, 8, 12, 16…</div>
+
+      <div style="overflow-x:auto;" class="mb">
+        <table class="pat-table">
+          <thead><tr><th>Position (n)</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="pos">Term Value</td>
+              <td>4</td><td>8</td><td>12</td><td>16</td>
+              <td><input class="tbl-cell-inp" id="c1v5" placeholder="?" style="width:62px;" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <input class="rule-input" id="c1-rule" placeholder='Rule in words…' style="width:230px;" />
+        <button class="check-btn" onclick="checkC1Rule()">Check Rule</button>
+        <button class="reveal-link" onclick="revealC1()">Reveal</button>
+      </div>
+      <div class="fb-msg" id="c1rf"></div>
+
+      <div class="pred-inputs">
+        <div class="pred-field">
+          <div class="pred-label">10th Term</div>
+          <input class="pred-input" id="c1-t10" placeholder="?" maxlength="4" />
+        </div>
+        <div class="pred-field">
+          <div class="pred-label">20th Term</div>
+          <input class="pred-input" id="c1-t20" placeholder="?" maxlength="4" />
+        </div>
+        <button class="pred-check" style="align-self:flex-end;" onclick="checkPred('c1-t10','c1-t20','c1pf',40,80,'4 × 10 = 40 · 4 × 20 = 80')">Check Predictions</button>
+      </div>
+      <div class="pred-fb" id="c1pf"></div>
+    </div>
+
+    <!-- Challenge 2: 1, 5, 9, 13 → 4n - 3 -->
+    <div class="challenge-card" data-step="CHALLENGE 2">
+      <div class="card-label sky">Pattern: 1, 5, 9, 13…</div>
+      <div class="prose mb">This one has two steps in the rule. Notice the <strong>difference</strong> between terms first!</div>
+
+      <div style="overflow-x:auto;" class="mb">
+        <table class="pat-table">
+          <thead><tr><th>Position (n)</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="pos">Term Value</td>
+              <td>1</td><td>5</td><td>9</td><td>13</td>
+              <td><input class="tbl-cell-inp" id="c2v5" placeholder="?" style="width:62px;" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout sky mb" style="font-size:12px;">
+        Hint: The difference between each term is <strong>4</strong>, so multiply by 4. But 4 × 1 = 4, and the first term is 1 — so what do we adjust?
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <input class="rule-input" id="c2-rule" placeholder='Rule in words…' style="width:260px;" />
+        <button class="check-btn" onclick="checkC2Rule()">Check Rule</button>
+        <button class="reveal-link" onclick="revealC2()">Reveal</button>
+      </div>
+      <div class="fb-msg" id="c2rf"></div>
+
+      <div class="pred-inputs">
+        <div class="pred-field">
+          <div class="pred-label">10th Term</div>
+          <input class="pred-input" id="c2-t10" placeholder="?" maxlength="4" />
+        </div>
+        <div class="pred-field">
+          <div class="pred-label">20th Term</div>
+          <input class="pred-input" id="c2-t20" placeholder="?" maxlength="4" />
+        </div>
+        <button class="pred-check" style="align-self:flex-end;" onclick="checkPred('c2-t10','c2-t20','c2pf',37,77,'4 × 10 − 3 = 37 · 4 × 20 − 3 = 77')">Check Predictions</button>
+      </div>
+      <div class="pred-fb" id="c2pf"></div>
+    </div>
+
+    <!-- Challenge 3: BONUS open-ended -->
+    <div class="challenge-card" data-step="BONUS CHALLENGE">
+      <div class="card-label rose">Create your OWN pattern!</div>
+      <div class="prose mb">Choose a multiplier and an optional offset. Write the first 4 terms, then swap with your teacher to see if they can find the rule!</div>
+
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px;">
+        <div class="pred-field">
+          <div class="pred-label">Multiplier (e.g. 3)</div>
+          <input class="pred-input" id="own-mult" placeholder="3" maxlength="3" type="number" min="1" max="20" style="width:80px;" />
+        </div>
+        <div class="pred-field">
+          <div class="pred-label">Offset ±</div>
+          <input class="pred-input" id="own-offset" placeholder="0" maxlength="4" type="number" style="width:80px;" />
+        </div>
+        <button class="pred-check" onclick="generateOwn()">Generate</button>
+      </div>
+      <div id="own-output" style="display:none;">
+        <div class="prose mb" id="own-seq"></div>
+        <div style="overflow-x:auto;">
+          <table class="pat-table" id="own-table">
+            <thead><tr id="own-thead"></tr></thead>
+            <tbody><tr id="own-tbody"></tr></tbody>
+          </table>
+        </div>
+        <div class="rule-box mt" id="own-rulebox">
+          <span class="rule-words" id="own-rule-words"></span>
+          <span class="rule-formula" id="own-rule-formula"></span>
+        </div>
+        <div class="callout amber mt" id="own-prediction"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ -->
+  <!-- TAB 5: WRAP-UP QUIZ       -->
+  <!-- ══════════════════════════ -->
+  <div class="section" id="tab-5">
+    <div class="sec-head">
+      <div class="badge pine">✅</div>
+      <div class="sec-meta">
+        <h2>Wrap-up — Generalising the Sequence</h2>
+        <div class="sub">5 minutes · Knowledge check</div>
+      </div>
+    </div>
+    <div class="callout pine mb">
+      Answer all 5 questions to complete Session 2. Apply your rules to find answers — don't just count on!
+    </div>
+    <div id="quiz-container"></div>
+    <div id="quiz-score"></div>
+  </div>
+
+</main>
+
+<!-- FOOTER NAV -->
+<div class="footer-nav">
+  <button class="nav-btn nav-prev" id="btn-prev" disabled>← Previous</button>
+  <div class="sec-ind" id="sec-ind">Warm-up · 1 of 6</div>
+  <button class="nav-btn nav-next" id="btn-next">Next →</button>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+let cur = 0; const TOTAL = 6;
+const LABELS = ['Warm-up','Introduction','Function Machines','Whiteboard','Prediction Challenge','Wrap-up Quiz'];
+const tabs = document.querySelectorAll('.tab');
+const secs = document.querySelectorAll('.section');
+const prog = document.getElementById('prog');
+const secInd = document.getElementById('sec-ind');
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+
+function goTo(i) {
+  cur = Math.max(0, Math.min(TOTAL-1, i));
+  tabs.forEach((t,idx) => t.classList.toggle('active', idx===cur));
+  secs.forEach((s,idx) => s.classList.toggle('active', idx===cur));
+  prog.style.width = ((cur+1)/TOTAL*100) + '%';
+  secInd.textContent = `${LABELS[cur]} · ${cur+1} of ${TOTAL}`;
+  btnPrev.disabled = cur===0;
+  btnNext.textContent = cur===TOTAL-1 ? '✓ Done' : 'Next →';
+  if (cur===3) resizeWB();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+tabs.forEach(t => t.addEventListener('click', () => goTo(+t.dataset.tab)));
+btnPrev.addEventListener('click', () => goTo(cur-1));
+btnNext.addEventListener('click', () => goTo(cur+1));
+
+// ══════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════
+let iv=null, secsT=0, running=false;
+const disp = document.getElementById('timer-display');
+const bStart = document.getElementById('btn-start');
+const bReset = document.getElementById('btn-reset');
+const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+bStart.addEventListener('click', () => {
+  if (running) { clearInterval(iv); running=false; bStart.textContent='▶ Start'; }
+  else { iv=setInterval(()=>{secsT++;disp.textContent=fmt(secsT);},1000); running=true; bStart.textContent='⏸ Pause'; }
+});
+bReset.addEventListener('click', () => { clearInterval(iv); running=false; secsT=0; disp.textContent='00:00'; bStart.textContent='▶ Start'; });
+
+// ══════════════════════════════════════
+// WARM-UP
+// ══════════════════════════════════════
+function norm(s) { return s.toLowerCase().replace(/\s+/g,'').replace(/[×*]/g,'x'); }
+
+function checkWarmup(inputId, fbId, canonical, aliases, successMsg) {
+  const val = norm(document.getElementById(inputId).value);
+  const fb = document.getElementById(fbId);
+  const allAliases = aliases.map(a => norm(a));
+  const match = val===norm(canonical) || allAliases.includes(val);
+  if (!val) { fb.textContent='⚠ Type your answer first!'; fb.className='fb-msg show err'; return; }
+  fb.textContent = match ? '✅ ' + successMsg : '❌ Not quite — check the difference between consecutive terms.';
+  fb.className = 'fb-msg show ' + (match ? 'ok' : 'err');
+  if (match) { document.querySelector(`#${inputId}`).disabled=true; }
+}
+
+function revealWarmup(inputId, fbId, answer, msg) {
+  document.getElementById(inputId).value = answer;
+  const fb = document.getElementById(fbId);
+  fb.textContent = '✅ ' + msg; fb.className = 'fb-msg show ok';
+  document.getElementById(inputId).disabled = true;
+}
+
+// ══════════════════════════════════════
+// FUNCTION MACHINES
+// ══════════════════════════════════════
+function checkFM(inputId, fbId, ruleId, correct, aliases) {
+  const val = norm(document.getElementById(inputId).value);
+  const allA = aliases.map(norm);
+  const ok = allA.includes(val);
+  const fb = document.getElementById(fbId);
+  fb.textContent = ok
+    ? `✅ Correct! The rule is ${correct}. Written as a formula: 3n (multiply position by 3).`
+    : `❌ Not quite. Look at how each position maps: 1→3, 2→6, 3→9. What operation links them?`;
+  fb.className = 'fb-msg show ' + (ok ? 'ok' : 'err');
+  if (ok) {
+    document.getElementById(ruleId).textContent = correct;
+    document.getElementById(ruleId).classList.add('locked');
+    const rb = document.getElementById('fm1-rulebox');
+    if (rb) rb.style.display = 'flex';
+  }
+}
+
+function revealFM(ruleId, label, fbId) {
+  const el = document.getElementById(ruleId);
+  el.textContent = label; el.classList.add('locked');
+  const fb = document.getElementById(fbId);
+  fb.textContent = `✅ Rule revealed: ${label} (3n). Position × 3 = term value.`;
+  fb.className = 'fb-msg show ok';
+  const rb = document.getElementById('fm1-rulebox');
+  if (rb) rb.style.display = 'flex';
+}
+
+const fm2Answers = [5, 7, 9, 11, 13]; // 2n+3
+function checkFM2() {
+  let allOk = true;
+  fm2Answers.forEach((ans, idx) => {
+    const inp = document.getElementById(`fm2o-${idx+1}`);
+    const val = parseInt(inp.value);
+    if (val === ans) { inp.classList.remove('wrong'); inp.classList.add('correct'); }
+    else { inp.classList.remove('correct'); inp.classList.add('wrong'); allOk = false; }
+  });
+  const fb = document.getElementById('fm2-fb');
+  fb.textContent = allOk
+    ? '✅ All correct! 2×1+3=5, 2×2+3=7, 2×3+3=9, 2×4+3=11, 2×5+3=13'
+    : '❌ Some are wrong — apply the rule 2n+3 to each position number.';
+  fb.className = 'fb-msg show ' + (allOk ? 'ok' : 'err');
+}
+
+function checkM3() {
+  const vals = [1,2,3,4,5].map(i => parseInt(document.getElementById(`m3v${i}`).value));
+  const correct = [4,8,12,16,20];
+  let tblOk = true;
+  vals.forEach((v,i) => {
+    const inp = document.getElementById(`m3v${i+1}`);
+    if (v===correct[i]) inp.classList.add('correct');
+    else { inp.classList.add('wrong'); tblOk=false; }
+  });
+  const ruleVal = norm(document.getElementById('m3-rule').value);
+  const ruleOk = ['x4','multiply by 4','times4','timesby4','mult4','4timesn'].some(a=>ruleVal.includes(norm(a)));
+  const fb = document.getElementById('m3-fb');
+  if (tblOk && ruleOk) {
+    fb.textContent = '✅ Perfect! Table: 4,8,12,16,20. Rule: Multiply by 4 (4n).';
+    fb.className = 'fb-msg show ok';
+  } else if (!tblOk) {
+    fb.textContent = '❌ Check your table values — the pattern is 4, 8, 12, 16, 20.';
+    fb.className = 'fb-msg show err';
+  } else {
+    fb.textContent = '✅ Table correct! Check your rule — try "Multiply by 4".';
+    fb.className = 'fb-msg show err';
+  }
+}
+
+// ══════════════════════════════════════
+// PREDICTION CHALLENGES
+// ══════════════════════════════════════
+function checkC1Rule() {
+  const val = norm(document.getElementById('c1-rule').value);
+  const ok = ['x4','multiply by 4','times 4','4n','4timesn','times4'].some(a=>val.includes(norm(a)));
+  const fb = document.getElementById('c1rf');
+  // also check v5
+  const v5 = parseInt(document.getElementById('c1v5').value);
+  const v5ok = v5===20;
+  if (v5ok) document.getElementById('c1v5').classList.add('correct');
+  else document.getElementById('c1v5').classList.add('wrong');
+  fb.textContent = ok
+    ? `✅ Rule: "Multiply by 4" (4n) — correct! ${v5ok ? 'And the 5th term is 20 ✓' : 'Check: the 5th term should be 20.'}`
+    : `❌ Hint: What do you multiply each position by to get 4, 8, 12, 16?`;
+  fb.className = 'fb-msg show ' + (ok ? 'ok' : 'err');
+}
+function revealC1() {
+  document.getElementById('c1-rule').value = 'Multiply the position number by 4';
+  document.getElementById('c1v5').value = '20';
+  document.getElementById('c1v5').classList.add('correct');
+  const fb = document.getElementById('c1rf');
+  fb.textContent = '✅ Rule: 4n. The 5th term = 4×5 = 20.'; fb.className='fb-msg show ok';
+}
+
+function checkC2Rule() {
+  const val = norm(document.getElementById('c2-rule').value);
+  const ok = ['4n-3','4nminus3','multiplybefore4thensubtract3','times4minus3','multiplyby4minus3'].some(a=>val.includes(norm(a)))
+    || (val.includes('4') && val.includes('3') && val.includes('-'));
+  const fb = document.getElementById('c2rf');
+  const v5 = parseInt(document.getElementById('c2v5').value);
+  const v5ok = v5===17;
+  if (v5ok) document.getElementById('c2v5').classList.add('correct');
+  else document.getElementById('c2v5').classList.add('wrong');
+  fb.textContent = ok
+    ? `✅ Rule: "4n − 3" — correct! ${v5ok ? '5th term = 4×5−3 = 17 ✓' : 'Check: 5th term = 4×5−3 = 17.'}`
+    : `❌ The difference is 4 (multiplier), and 4×1=4 but first term is 1, so subtract 3. Rule: 4n − 3.`;
+  fb.className = 'fb-msg show ' + (ok ? 'ok' : 'err');
+}
+function revealC2() {
+  document.getElementById('c2-rule').value = 'Multiply by 4, then subtract 3';
+  document.getElementById('c2v5').value = '17';
+  document.getElementById('c2v5').classList.add('correct');
+  const fb = document.getElementById('c2rf');
+  fb.textContent = '✅ Rule: 4n − 3. The 5th term = 4×5 − 3 = 17.'; fb.className='fb-msg show ok';
+}
+
+function checkPred(t10Id, t20Id, fbId, ans10, ans20, workingMsg) {
+  const v10 = parseInt(document.getElementById(t10Id).value);
+  const v20 = parseInt(document.getElementById(t20Id).value);
+  const ok10 = v10===ans10, ok20 = v20===ans20;
+  const t10 = document.getElementById(t10Id);
+  const t20 = document.getElementById(t20Id);
+  t10.className = 'pred-input ' + (ok10?'ok':'err');
+  t20.className = 'pred-input ' + (ok20?'ok':'err');
+  const fb = document.getElementById(fbId);
+  if (ok10 && ok20) {
+    fb.textContent = `✅ Both correct! ${workingMsg}`;
+    fb.className = 'pred-fb show ok';
+  } else {
+    fb.textContent = `❌ ${!ok10?`10th term: ${ans10}. `:''}${!ok20?`20th term: ${ans20}.`:''} Apply the rule to n=10 and n=20.`;
+    fb.className = 'pred-fb show err';
+  }
+}
+
+// ══════════════════════════════════════
+// OWN PATTERN GENERATOR
+// ══════════════════════════════════════
+function generateOwn() {
+  const mult = parseInt(document.getElementById('own-mult').value) || 3;
+  const offset = parseInt(document.getElementById('own-offset').value) || 0;
+  const terms = [1,2,3,4,5,6].map(n => mult*n + offset);
+  document.getElementById('own-seq').innerHTML = `<strong>First 6 terms:</strong> ${terms.slice(0,4).join(', ')}, <em>${terms[4]}</em>, <em>${terms[5]}</em>…`;
+
+  const thead = document.getElementById('own-thead');
+  const tbody = document.getElementById('own-tbody');
+  thead.innerHTML = '<th>Position (n)</th>' + [1,2,3,4,5,6].map(n=>`<th>${n}</th>`).join('');
+  tbody.innerHTML = '<td class="pos">Term Value</td>' + terms.map(v=>`<td>${v}</td>`).join('');
+
+  const ruleWords = offset===0
+    ? `Multiply the position number by ${mult}`
+    : `Multiply the position number by ${mult}, then ${offset>0?'add':'subtract'} ${Math.abs(offset)}`;
+  const formula = offset===0 ? `${mult}n` : (offset>0 ? `${mult}n + ${offset}` : `${mult}n − ${Math.abs(offset)}`);
+
+  document.getElementById('own-rule-words').textContent = `"${ruleWords}"`;
+  document.getElementById('own-rule-formula').textContent = formula;
+  document.getElementById('own-prediction').innerHTML = `
+    <strong>10th term:</strong> ${mult*10+offset} &nbsp;|&nbsp; <strong>20th term:</strong> ${mult*20+offset} &nbsp;|&nbsp; <strong>50th term:</strong> ${mult*50+offset}
+  `;
+  document.getElementById('own-output').style.display = 'block';
+}
+
+// ══════════════════════════════════════
+// WHITEBOARD
+// ══════════════════════════════════════
+const canvas = document.getElementById('wb');
+const ctx = canvas.getContext('2d');
+let wbTool='pen', wbColor='#1e1a14', wbSize=2, drawing=false, lx=0, ly=0;
+let strokes=[], curStroke=null;
+
+function resizeWB() {
+  const w = canvas.offsetWidth;
+  const img = ctx.getImageData(0,0,canvas.width,canvas.height);
+  canvas.width=w; canvas.height=520; ctx.putImageData(img,0,0);
+}
+function getPos(e) {
+  const r=canvas.getBoundingClientRect(), sx=canvas.width/r.width, sy=canvas.height/r.height;
+  const s=e.touches?e.touches[0]:e;
+  return [(s.clientX-r.left)*sx,(s.clientY-r.top)*sy];
+}
+function startD(e){e.preventDefault();drawing=true;[lx,ly]=getPos(e);curStroke={tool:wbTool,color:wbColor,size:wbSize,pts:[[lx,ly]]};}
+function doD(e){
+  if(!drawing)return; e.preventDefault();
+  const[x,y]=getPos(e);
+  ctx.beginPath(); ctx.lineWidth=wbTool==='eraser'?wbSize*6:wbSize;
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.strokeStyle=wbTool==='eraser'?'#ffffff':wbColor;
+  ctx.globalCompositeOperation=wbTool==='eraser'?'destination-out':'source-over';
+  ctx.moveTo(lx,ly); ctx.lineTo(x,y); ctx.stroke();
+  curStroke.pts.push([x,y]); [lx,ly]=[x,y];
+}
+function endD(){if(!drawing)return;drawing=false;ctx.globalCompositeOperation='source-over';if(curStroke){strokes.push(curStroke);curStroke=null;}}
+
+canvas.addEventListener('mousedown',startD); canvas.addEventListener('mousemove',doD);
+canvas.addEventListener('mouseup',endD); canvas.addEventListener('mouseleave',endD);
+canvas.addEventListener('touchstart',startD,{passive:false}); canvas.addEventListener('touchmove',doD,{passive:false});
+canvas.addEventListener('touchend',endD);
+
+canvas.addEventListener('click',e=>{
+  if(wbTool!=='text')return;
+  const[x,y]=getPos(e);
+  const txt=prompt('Enter text:'); if(!txt)return;
+  ctx.font=`${14+wbSize*2}px 'JetBrains Mono',monospace`;
+  ctx.fillStyle=wbColor; ctx.globalCompositeOperation='source-over'; ctx.fillText(txt,x,y);
+});
+
+function setTool(id){
+  ['tool-pen','tool-eraser','tool-text'].forEach(t=>document.getElementById(t).classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+document.getElementById('tool-pen').addEventListener('click',()=>{wbTool='pen';setTool('tool-pen');canvas.style.cursor='crosshair';});
+document.getElementById('tool-eraser').addEventListener('click',()=>{wbTool='eraser';setTool('tool-eraser');canvas.style.cursor='cell';});
+document.getElementById('tool-text').addEventListener('click',()=>{wbTool='text';setTool('tool-text');canvas.style.cursor='text';});
+
+document.querySelectorAll('.cswatch').forEach(sw=>{
+  sw.addEventListener('click',()=>{
+    document.querySelectorAll('.cswatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active'); wbColor=sw.dataset.c;
+    wbTool='pen'; setTool('tool-pen'); canvas.style.cursor='crosshair';
+  });
+});
+document.querySelectorAll('.sz-btn').forEach(sb=>{
+  sb.addEventListener('click',()=>{
+    document.querySelectorAll('.sz-btn').forEach(s=>s.classList.remove('active'));
+    sb.classList.add('active'); wbSize=+sb.dataset.sz;
+  });
+});
+document.getElementById('wb-clear').addEventListener('click',()=>{
+  if(!confirm('Clear the whiteboard?'))return;
+  ctx.clearRect(0,0,canvas.width,canvas.height); strokes=[];
+});
+document.getElementById('wb-undo').addEventListener('click',()=>{
+  strokes.pop(); ctx.clearRect(0,0,canvas.width,canvas.height);
+  strokes.forEach(s=>{
+    ctx.beginPath(); ctx.lineWidth=s.size; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.strokeStyle=s.color; ctx.globalCompositeOperation='source-over';
+    s.pts.forEach(([x,y],i)=>i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)); ctx.stroke();
+  });
+});
+
+document.querySelectorAll('#wb-stamps [data-stamp]').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    goTo(3);
+    const txt=chip.dataset.stamp;
+    setTimeout(()=>{
+      ctx.font="14px 'JetBrains Mono',monospace";
+      ctx.fillStyle=wbColor; ctx.globalCompositeOperation='source-over';
+      const lines=txt.split('\n');
+      const y0=Math.max(30, 30+strokes.length*3);
+      lines.forEach((line,i)=>ctx.fillText(line,20,Math.min(y0+i*22,490)));
+    },150);
+  });
+});
+
+// ══════════════════════════════════════
+// QUIZ
+// ══════════════════════════════════════
+const quizData=[
+  {
+    q:'The pattern is 6, 12, 18, 24… Which rule correctly links the position number (n) to the term value?',
+    opts:['Add 6 to the position number','Multiply the position number by 6','Multiply the position number by 2, then add 4','Divide the term value by 2'],
+    ans:1,
+    fb:'Term value = 6 × n. Position 1→6, 2→12, 3→18 — all position times 6. ✓'
+  },
+  {
+    q:'A pattern has the rule "Multiply by 5". What is the 10th term?',
+    opts:['15','45','50','55'],
+    ans:2,
+    fb:'5 × 10 = 50. The rule 5n applied to position 10 gives 50. ✓'
+  },
+  {
+    q:'The pattern table shows: n=1→3, n=2→5, n=3→7, n=4→9. What is the rule?',
+    opts:['Add 3 to the position number','Multiply by 2, then add 1','Multiply by 3','Add 2 to each previous term'],
+    ans:1,
+    fb:'2×1+1=3, 2×2+1=5, 2×3+1=7 ✓ — the rule is 2n+1 (multiply position by 2, then add 1). ✓'
+  },
+  {
+    q:'Using the rule 4n − 3, what is the 20th term?',
+    opts:['77','80','73','83'],
+    ans:0,
+    fb:'4 × 20 − 3 = 80 − 3 = 77. Always apply the full rule to the position number. ✓'
+  },
+  {
+    q:'Why is finding a position rule more powerful than just listing terms one by one?',
+    opts:[
+      'Because writing tables is faster than drawing sequences',
+      'It lets you calculate any term directly — even the 100th — without finding all the terms before it',
+      'Because rules always involve multiplication',
+      'Listing terms is actually more powerful'
+    ],
+    ans:1,
+    fb:'A position rule (like 4n) lets you instantly find any term — 10th, 50th, 1000th — without working through every term before it. ✓'
+  }
+];
+
+let qAnswered = 0;
+const qContainer = document.getElementById('quiz-container');
+const qScore = document.getElementById('quiz-score');
+
+quizData.forEach((item, qi)=>{
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  const opts = item.opts.map((o,oi)=>`<div class="q-opt" data-qi="${qi}" data-oi="${oi}">${String.fromCharCode(65+oi)}. ${o}</div>`).join('');
+  card.innerHTML = `<div class="q-text">Q${qi+1}. ${item.q}</div><div class="q-opts">${opts}</div><div class="q-fb" id="qfb-${qi}"></div>`;
+  qContainer.appendChild(card);
+});
+
+qContainer.addEventListener('click', e=>{
+  const opt = e.target.closest('.q-opt'); if(!opt)return;
+  const qi=+opt.dataset.qi, oi=+opt.dataset.oi;
+  const card=opt.closest('.qcard'); if(card.classList.contains('answered'))return;
+  card.classList.add('answered');
+  card.querySelectorAll('.q-opt')[quizData[qi].ans].classList.add('correct');
+  if(oi!==quizData[qi].ans) opt.classList.add('wrong');
+  const fb=document.getElementById(`qfb-${qi}`);
+  fb.textContent=(oi===quizData[qi].ans?'✅ ':'❌ Not quite. ')+quizData[qi].fb;
+  fb.className='q-fb show '+(oi===quizData[qi].ans?'ok':'err');
+  qAnswered++;
+  if(qAnswered===quizData.length){
+    const correct=document.querySelectorAll('.q-opt.correct:not(.wrong)').length;
+    qScore.style.display='block';
+    qScore.innerHTML=`${correct} / ${quizData.length} correct!<br><span style="font-size:16px;font-family:var(--mono);font-style:normal;color:var(--muted);">Session 2 complete — well done!</span>`;
+  }
+});
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+window.addEventListener('load', ()=>{ resizeWB(); goTo(0); });
+window.addEventListener('resize', resizeWB);
+</script>
+</body>
+</html>
