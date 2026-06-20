@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 4 – Creating Basic Financial Plans</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sage:    #4a7c59;
+  --sage-lt: #e8f2eb;
+  --amber:   #c9863a;
+  --amber-lt:#fef3e2;
+  --rose:    #c0445a;
+  --rose-lt: #fde8ec;
+  --ink:     #1c2b1e;
+  --paper:   #faf8f3;
+  --mist:    #f2ede4;
+  --line:    #ddd6c8;
+  --sky:     #3a7dc0;
+  --sky-lt:  #e6f0fc;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body {
+  font-family:'DM Sans',sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+/* ledger-line background */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 39px,
+      rgba(180,170,150,.18) 39px,
+      rgba(180,170,150,.18) 40px
+    );
+  pointer-events:none;
+}
+
+/* left margin strip */
+body::after {
+  content:'';
+  position:fixed; top:0; left:72px; bottom:0; width:2px; z-index:0;
+  background:rgba(192,68,90,.18);
+  pointer-events:none;
+}
+
+/* ── CONTAINER ── */
+#app {
+  position:relative; z-index:1;
+  max-width:980px; margin:0 auto;
+  padding:32px 24px 80px 100px;
+}
+
+/* ── HEADER ── */
+header {
+  margin-bottom:32px;
+  animation:riseIn .6s ease both;
+}
+@keyframes riseIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+
+.session-label {
+  font-size:.7rem; font-weight:700; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--amber);
+  margin-bottom:8px;
+}
+header h1 {
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(2rem,5vw,3.2rem);
+  color:var(--ink); line-height:1.1; margin-bottom:10px;
+}
+header h1 em { color:var(--sage); font-style:normal; }
+.learning-tag {
+  display:inline-flex; align-items:center; gap:8px;
+  background:var(--sage); color:#fff;
+  border-radius:6px; padding:6px 16px;
+  font-size:.8rem; font-weight:600;
+}
+
+/* ── PROGRESS ── */
+.progress-bar-wrap {
+  display:flex; gap:0; margin-bottom:28px;
+  border:1.5px solid var(--line); border-radius:10px;
+  overflow:hidden; animation:riseIn .7s .1s ease both;
+}
+.pb-seg {
+  flex:1; padding:10px 6px; text-align:center;
+  font-size:.72rem; font-weight:700; cursor:pointer;
+  transition:all .22s; color:#888; background:white;
+  border-right:1.5px solid var(--line);
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+.pb-seg:last-child{border-right:none;}
+.pb-seg .pb-icon{font-size:1.1rem;}
+.pb-seg.active{background:var(--sage);color:#fff;}
+.pb-seg:hover:not(.active){background:var(--sage-lt);color:var(--sage);}
+
+/* ── CARDS ── */
+.card {
+  background:white;
+  border:1.5px solid var(--line);
+  border-radius:16px;
+  padding:30px;
+  box-shadow: 4px 4px 0 var(--line);
+  display:none;
+  animation:riseIn .4s ease both;
+}
+.card.active{display:block;}
+
+.card-header {
+  display:flex; align-items:flex-start; gap:16px;
+  margin-bottom:24px; padding-bottom:18px;
+  border-bottom:1.5px solid var(--mist);
+}
+.ch-icon {
+  width:50px; height:50px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.5rem; flex-shrink:0;
+}
+.ch-text h2 {
+  font-family:'DM Serif Display',serif;
+  font-size:1.5rem; color:var(--ink); line-height:1.2;
+}
+.ch-text p{font-size:.83rem;color:#778;margin-top:3px;}
+.time-chip {
+  margin-left:auto; flex-shrink:0;
+  background:var(--mist); color:#666;
+  border-radius:20px; padding:4px 14px;
+  font-size:.75rem; font-weight:700;
+}
+
+/* ── WARM-UP ── */
+.wu-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.wu-q {
+  background:var(--mist); border-radius:12px;
+  padding:20px; border-left:4px solid var(--sage);
+}
+.wu-q .q-text {
+  font-family:'DM Serif Display',serif;
+  font-size:1.2rem; color:var(--ink); margin-bottom:14px;
+  line-height:1.4;
+}
+.reveal-btn {
+  background:var(--sage); color:white; border:none;
+  border-radius:8px; padding:8px 18px;
+  font-family:'DM Sans',sans-serif; font-weight:700;
+  font-size:.85rem; cursor:pointer; transition:all .2s;
+}
+.reveal-btn:hover{background:#3a6347;transform:translateY(-1px);}
+.reveal-btn:disabled{background:#aaa;cursor:not-allowed;transform:none;}
+.wu-answer {
+  display:none; margin-top:10px;
+  background:white; border-radius:8px; padding:10px 14px;
+  font-weight:700; font-size:1.1rem; color:var(--sage);
+  border:1.5px solid var(--sage-lt);
+  animation:pop .3s ease;
+}
+.wu-answer.show{display:block;}
+@keyframes pop{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* ── INTRO CONCEPTS ── */
+.concepts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:600px){.concepts,.wu-grid{grid-template-columns:1fr;}}
+.concept-card {
+  border-radius:12px; padding:18px; text-align:center;
+  border:1.5px solid transparent;
+}
+.concept-card .cc-icon{font-size:2rem;margin-bottom:8px;}
+.concept-card h3{font-weight:700;font-size:.95rem;margin-bottom:6px;}
+.concept-card p{font-size:.78rem;line-height:1.5;color:#556;}
+.cc-income  {background:var(--sage-lt); border-color:#b8d9c2;}
+.cc-expenses{background:var(--rose-lt); border-color:#f0b8c4;}
+.cc-savings {background:var(--amber-lt);border-color:#f0d0a0;}
+
+.formula-strip {
+  background:var(--ink); color:white; border-radius:10px;
+  padding:14px 20px; font-family:'DM Serif Display',serif;
+  font-size:1.1rem; text-align:center; letter-spacing:.04em;
+}
+.formula-strip span{color:var(--amber);}
+
+/* ── BUDGET TABLE (Deep Dive) ── */
+.budget-table {
+  width:100%; border-collapse:collapse; margin-bottom:18px;
+}
+.budget-table th {
+  background:var(--ink); color:white;
+  padding:10px 14px; text-align:left;
+  font-size:.8rem; letter-spacing:.08em; text-transform:uppercase;
+  font-weight:600;
+}
+.budget-table th:last-child{text-align:right;}
+.budget-table td {
+  padding:11px 14px; border-bottom:1px solid var(--line);
+  font-size:.9rem; vertical-align:top;
+}
+.budget-table td:last-child{text-align:right;font-weight:700;font-family:'DM Serif Display',serif;font-size:1rem;}
+.budget-table tr.section-row td {
+  background:var(--mist); font-weight:700; font-size:.78rem;
+  text-transform:uppercase; letter-spacing:.1em; color:#778;
+  padding:8px 14px;
+}
+.budget-table tr.income-row td{color:var(--sage);}
+.budget-table tr.expense-row td{color:var(--rose);}
+.budget-table tr.total-row td{
+  background:var(--ink); color:white; font-weight:700;
+  font-size:1rem; font-family:'DM Serif Display',serif;
+}
+
+.calc-badge {
+  display:inline-block; font-size:.72rem; font-weight:700;
+  background:var(--sage-lt); color:var(--sage);
+  border-radius:4px; padding:2px 8px; margin-left:6px;
+}
+
+/* reveal cells */
+.reveal-cell {
+  cursor:pointer; color:transparent; background:var(--mist);
+  border-radius:6px; padding:2px 10px; transition:all .3s;
+  display:inline-block; min-width:70px; text-align:center;
+  user-select:none;
+}
+.reveal-cell::before{content:'tap to reveal'; color:#aaa; font-size:.72rem; font-weight:600;}
+.reveal-cell.shown{color:inherit; background:transparent;}
+.reveal-cell.shown::before{content:'';}
+.income-row .reveal-cell.shown{color:var(--sage);}
+.expense-row .reveal-cell.shown{color:var(--rose);}
+
+.result-banner {
+  border-radius:12px; padding:18px 22px;
+  display:none; animation:pop .35s ease; margin-top:14px;
+}
+.result-banner.show{display:block;}
+.result-banner h3{font-family:'DM Serif Display',serif;font-size:1.3rem;margin-bottom:6px;}
+.result-banner p{font-size:.88rem;line-height:1.6;}
+.surplus{background:#e8f5ec;border:2px solid #a8dbb8;}
+.surplus h3{color:var(--sage);}
+.deficit{background:#fde8ec;border:2px solid #f0b8c4;}
+.deficit h3{color:var(--rose);}
+
+.big-btn {
+  background:var(--sage); color:white; border:none;
+  border-radius:10px; padding:11px 26px;
+  font-family:'DM Sans',sans-serif; font-weight:700; font-size:.92rem;
+  cursor:pointer; transition:all .2s; margin-top:14px;
+}
+.big-btn:hover{background:#3a6347;transform:translateY(-2px);}
+.big-btn.amber{background:var(--amber);}
+.big-btn.amber:hover{background:#a86f2a;}
+
+/* ── PARTY BUDGET BUILDER ── */
+.party-layout{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:620px){.party-layout{grid-template-columns:1fr;}}
+
+.budget-section{background:var(--mist);border-radius:12px;padding:18px;}
+.budget-section h3{
+  font-weight:700; font-size:.82rem; text-transform:uppercase;
+  letter-spacing:.1em; margin-bottom:14px;
+  display:flex; align-items:center; gap:8px;
+}
+.budget-section h3 .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+.line-item{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.line-item label{font-size:.85rem;font-weight:600;color:var(--ink);flex:1;}
+.line-item .li-val{
+  font-family:'DM Serif Display',serif; font-size:1.05rem;
+  font-weight:700; min-width:70px; text-align:right;
+}
+.line-item .li-note{font-size:.72rem;color:#889;margin-top:2px;}
+
+.total-line{
+  border-top:2px solid var(--line); margin-top:12px; padding-top:12px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.total-line .tl-label{font-weight:700; font-size:.88rem;}
+.total-line .tl-val{
+  font-family:'DM Serif Display',serif; font-size:1.4rem; font-weight:700;
+}
+.income-color{color:var(--sage);}
+.expense-color{color:var(--rose);}
+
+.balance-bar{
+  grid-column:1/-1; border-radius:12px; padding:20px;
+  border:2px solid var(--line); background:white; text-align:center;
+}
+.balance-bar .bal-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#889;margin-bottom:6px;}
+.balance-bar .bal-amount{font-family:'DM Serif Display',serif;font-size:2.6rem;font-weight:700;margin-bottom:4px;}
+.balance-bar .bal-note{font-size:.85rem;color:#667;line-height:1.5;}
+
+.scenario-q{
+  grid-column:1/-1; background:var(--amber-lt);
+  border:1.5px solid #f0d0a0; border-radius:12px; padding:18px;
+}
+.scenario-q h4{font-weight:700;color:var(--amber);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.scenario-q p{font-size:.88rem;color:#556;line-height:1.6;margin-bottom:12px;}
+.scenario-q .diff-row{display:flex;gap:8px;flex-wrap:wrap;}
+.diff-tag{
+  background:white; border:1.5px solid var(--line);
+  border-radius:8px; padding:8px 14px;
+  font-size:.85rem; font-weight:700; cursor:pointer; transition:all .2s;
+}
+.diff-tag:hover{border-color:var(--amber);background:var(--amber-lt);}
+.diff-tag.chosen{border-color:var(--amber);background:var(--amber);color:white;}
+
+.scenario-result{
+  display:none; margin-top:12px;
+  background:white; border-radius:8px; padding:12px 16px;
+  font-size:.88rem; color:var(--ink); line-height:1.6;
+  border-left:4px solid var(--amber);
+  animation:pop .3s ease;
+}
+.scenario-result.show{display:block;}
+
+/* ── WRAP-UP ── */
+.reflection-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:580px){.reflection-cards{grid-template-columns:1fr;}}
+.ref-card{
+  border-radius:12px; border:2px solid var(--line);
+  padding:18px; text-align:center; cursor:pointer;
+  transition:all .25s; background:white;
+}
+.ref-card:hover,.ref-card.picked{
+  border-color:var(--sage); background:var(--sage-lt);
+  transform:translateY(-3px);
+}
+.ref-card .rc-icon{font-size:2rem;margin-bottom:8px;}
+.ref-card h4{font-weight:700;font-size:.9rem;margin-bottom:4px;color:var(--ink);}
+.ref-card p{font-size:.78rem;color:#667;line-height:1.4;}
+
+.checklist{background:var(--mist);border-radius:12px;padding:20px;margin-bottom:16px;}
+.checklist h3{font-weight:700;margin-bottom:14px;font-size:.9rem;color:var(--ink);}
+.cl-item{
+  display:flex;align-items:flex-start;gap:10px;
+  margin-bottom:10px;cursor:pointer;
+}
+.cl-box{
+  width:22px;height:22px;border-radius:6px;
+  border:2px solid var(--sage); flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem; transition:all .2s; margin-top:1px;
+}
+.cl-box.checked{background:var(--sage);border-color:var(--sage);}
+.cl-text{font-size:.88rem;color:#334;line-height:1.5;}
+
+.final-note{
+  background:var(--ink);color:white;border-radius:12px;padding:20px;
+  text-align:center; display:none; animation:pop .4s ease;
+}
+.final-note.show{display:block;}
+.final-note h3{font-family:'DM Serif Display',serif;font-size:1.4rem;margin-bottom:6px;color:var(--amber);}
+.final-note p{font-size:.88rem;opacity:.85;line-height:1.6;}
+
+/* ── WHITEBOARD ── */
+.whiteboard{
+  background:white; border:2px dashed var(--line);
+  border-radius:12px; padding:14px; margin-top:16px;
+}
+.whiteboard label{
+  font-size:.72rem; font-weight:700; text-transform:uppercase;
+  letter-spacing:.1em; color:#aaa; display:block; margin-bottom:6px;
+}
+.whiteboard textarea{
+  width:100%; border:none; resize:vertical; outline:none;
+  font-family:'DM Sans',sans-serif; font-size:.92rem;
+  color:var(--ink); min-height:70px; line-height:1.7;
+}
+
+/* ── FOOTER NAV ── */
+.nav-foot{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:28px;
+}
+.nav-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--ink);color:white;border:none;
+  border-radius:10px;padding:11px 22px;
+  font-family:'DM Sans',sans-serif;font-weight:700;font-size:.9rem;
+  cursor:pointer;transition:all .22s;
+  box-shadow:3px 3px 0 rgba(0,0,0,.2);
+}
+.nav-btn:hover{background:#2f4032;transform:translateY(-2px);}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none;}
+.nav-btn.fwd{background:var(--sage);}
+.nav-btn.fwd:hover{background:#3a6347;}
+.step-lbl{font-size:.8rem;color:#aaa;font-weight:700;}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="session-label">Session 4 · Year 5/6 Financial Literacy</div>
+    <h1>Creating Basic<br><em>Financial Plans</em></h1>
+    <div class="learning-tag">📋 P7 — Makes &amp; uses simple financial plans</div>
+  </header>
+
+  <!-- PROGRESS -->
+  <nav class="progress-bar-wrap">
+    <div class="pb-seg active" onclick="goTo(0)"><span class="pb-icon">💭</span>Warm-up</div>
+    <div class="pb-seg" onclick="goTo(1)"><span class="pb-icon">📖</span>Intro</div>
+    <div class="pb-seg" onclick="goTo(2)"><span class="pb-icon">🚌</span>Deep Dive</div>
+    <div class="pb-seg" onclick="goTo(3)"><span class="pb-icon">🎂</span>Practice</div>
+    <div class="pb-seg" onclick="goTo(4)"><span class="pb-icon">🏁</span>Wrap-up</div>
+  </nav>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- 0 · WARM-UP -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="card active" id="sec0">
+    <div class="card-header">
+      <div class="ch-icon" style="background:var(--sage-lt);">💭</div>
+      <div class="ch-text">
+        <h2>What If…?</h2>
+        <p>Quick mental maths warm-up before we plan</p>
+      </div>
+      <span class="time-chip">⏱ 5 mins</span>
+    </div>
+
+    <div class="wu-grid">
+      <div class="wu-q">
+        <div class="q-text">"If you have $50 and spend $30, what's left?"</div>
+        <button class="reveal-btn" onclick="showWU(this,'$20.00','$50 − $30 = $20 remaining')">Reveal</button>
+        <div class="wu-answer"></div>
+      </div>
+      <div class="wu-q">
+        <div class="q-text">"Something costs $7 and you need 3. How much?"</div>
+        <button class="reveal-btn" onclick="showWU(this,'$21.00','$7 × 3 = $21')">Reveal</button>
+        <div class="wu-answer"></div>
+      </div>
+      <div class="wu-q">
+        <div class="q-text">"You earn $80, spend $55. How much do you save?"</div>
+        <button class="reveal-btn" onclick="showWU(this,'$25.00','$80 − $55 = $25 saved')">Reveal</button>
+        <div class="wu-answer"></div>
+      </div>
+      <div class="wu-q">
+        <div class="q-text">"You need $120 but only have $95. How much short are you?"</div>
+        <button class="reveal-btn" onclick="showWU(this,'$25.00 short','$120 − $95 = $25 shortfall')">Reveal</button>
+        <div class="wu-answer"></div>
+      </div>
+    </div>
+
+    <div class="whiteboard" style="margin-top:18px;">
+      <label>📝 Working space</label>
+      <textarea placeholder="Write your working out here…"></textarea>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- 1 · INTRO -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="card" id="sec1">
+    <div class="card-header">
+      <div class="ch-icon" style="background:var(--amber-lt);">📖</div>
+      <div class="ch-text">
+        <h2>My Money Plan — Budgeting</h2>
+        <p>What is a financial plan and why does it matter?</p>
+      </div>
+      <span class="time-chip">⏱ 10 mins</span>
+    </div>
+
+    <p style="font-size:.92rem;line-height:1.7;margin-bottom:18px;color:#334;">
+      A <strong>financial plan</strong> (or <em>budget</em>) is a plan for how you will use your money — deciding how much comes in, what you'll spend it on, and how much you want to save. It's like a roadmap for your money.
+    </p>
+
+    <div class="concepts">
+      <div class="concept-card cc-income">
+        <div class="cc-icon">💚</div>
+        <h3>Income</h3>
+        <p>Money that <strong>comes in</strong>. Could be pocket money, gifts, fundraising, wages.</p>
+      </div>
+      <div class="concept-card cc-expenses">
+        <div class="cc-icon">❤️</div>
+        <h3>Expenses</h3>
+        <p>Money that <strong>goes out</strong>. Things you buy or pay for — food, tickets, supplies.</p>
+      </div>
+      <div class="concept-card cc-savings">
+        <div class="cc-icon">💛</div>
+        <h3>Savings</h3>
+        <p>Money <strong>left over</strong> after expenses. Put aside for future goals or emergencies.</p>
+      </div>
+    </div>
+
+    <div class="formula-strip" style="margin-bottom:18px;">
+      Income − Expenses = <span>Savings (or Shortfall)</span>
+    </div>
+
+    <div style="background:var(--mist);border-radius:12px;padding:18px;margin-bottom:16px;">
+      <p style="font-weight:700;margin-bottom:12px;font-size:.9rem;">🎯 Why is budgeting important?</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="color:var(--sage);font-size:1.1rem;">✅</span>
+          <span style="font-size:.88rem;color:#334;line-height:1.5;"><strong>Achieve goals</strong> — saving up for something big becomes possible with a plan</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="color:var(--sage);font-size:1.1rem;">✅</span>
+          <span style="font-size:.88rem;color:#334;line-height:1.5;"><strong>Avoid running out</strong> — know before you spend whether you have enough</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="color:var(--sage);font-size:1.1rem;">✅</span>
+          <span style="font-size:.88rem;color:#334;line-height:1.5;"><strong>Make choices</strong> — if money is tight, a budget helps you decide what matters most</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--ink);color:white;border-radius:12px;padding:16px 20px;font-size:.88rem;line-height:1.6;">
+      <strong style="color:var(--amber);">📐 How we write a budget:</strong><br>
+      List all income → list all expenses (with calculations) → subtract expenses from income → see if you have a surplus or deficit.
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- 2 · DEEP DIVE: CLASS EXCURSION -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="card" id="sec2">
+    <div class="card-header">
+      <div class="ch-icon" style="background:#e6f0fc;">🚌</div>
+      <div class="ch-text">
+        <h2>Class Excursion Budget</h2>
+        <p>Fill in the budget — click each amount to reveal</p>
+      </div>
+      <span class="time-chip">⏱ 15 mins</span>
+    </div>
+
+    <p style="font-size:.88rem;color:#556;margin-bottom:16px;line-height:1.6;">
+      Your class is planning an excursion. Work through the budget step-by-step — <strong>tap each cell</strong> to reveal the calculated amount, then check your working below.
+    </p>
+
+    <table class="budget-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Calculation</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="section-row">
+          <td colspan="3">💚 INCOME</td>
+        </tr>
+        <tr class="income-row">
+          <td>Class fundraising</td>
+          <td><span style="color:#889;font-size:.8rem;">given</span></td>
+          <td><span class="reveal-cell" onclick="reveal(this,'$200.00')">$200.00</span></td>
+        </tr>
+        <tr class="income-row">
+          <td>Students (20 × $15)</td>
+          <td><span class="calc-badge">20 × $15</span></td>
+          <td><span class="reveal-cell" onclick="reveal(this,'$300.00')">$300.00</span></td>
+        </tr>
+        <tr class="total-row">
+          <td colspan="2">TOTAL INCOME</td>
+          <td><span class="reveal-cell" style="color:white;" onclick="reveal(this,'$500.00')">$500.00</span></td>
+        </tr>
+        <tr class="section-row">
+          <td colspan="3">❤️ EXPENSES</td>
+        </tr>
+        <tr class="expense-row">
+          <td>Bus hire</td>
+          <td><span style="color:#889;font-size:.8rem;">given</span></td>
+          <td><span class="reveal-cell" onclick="reveal(this,'$250.00')">$250.00</span></td>
+        </tr>
+        <tr class="expense-row">
+          <td>Entry fee (20 × $8)</td>
+          <td><span class="calc-badge">20 × $8</span></td>
+          <td><span class="reveal-cell" onclick="reveal(this,'$160.00')">$160.00</span></td>
+        </tr>
+        <tr class="expense-row">
+          <td>Snacks (20 × $3.50)</td>
+          <td><span class="calc-badge">20 × $3.50</span></td>
+          <td><span class="reveal-cell" onclick="reveal(this,'$70.00')">$70.00</span></td>
+        </tr>
+        <tr class="total-row">
+          <td colspan="2">TOTAL EXPENSES</td>
+          <td><span class="reveal-cell" style="color:white;" onclick="reveal(this,'$480.00')">$480.00</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="big-btn" onclick="showExcursionResult()">Calculate Balance 🧮</button>
+
+    <div class="result-banner surplus" id="exc-result">
+      <h3>✅ Surplus of $20.00!</h3>
+      <p><strong>$500.00 income − $480.00 expenses = $20.00 surplus.</strong><br>
+      The class has <em>enough money</em> — and $20 left over! This could cover an unexpected cost or be added to class savings.</p>
+    </div>
+
+    <div class="whiteboard">
+      <label>📝 Show your working</label>
+      <textarea placeholder="Step 1: Total income = $200 + (20 × $15) = $200 + $300 = $500&#10;Step 2: Total expenses = $250 + (20 × $8) + (20 × $3.50) = $250 + $160 + $70 = $480&#10;Step 3: Balance = $500 − $480 = $20 surplus"></textarea>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- 3 · PRACTICE: BIRTHDAY PARTY -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="card" id="sec3">
+    <div class="card-header">
+      <div class="ch-icon" style="background:#fde8ec;">🎂</div>
+      <div class="ch-text">
+        <h2>My Birthday Party Budget</h2>
+        <p>Build your own financial plan — see the balance update live!</p>
+      </div>
+      <span class="time-chip">⏱ 15 mins</span>
+    </div>
+
+    <div class="party-layout">
+
+      <!-- INCOME -->
+      <div class="budget-section">
+        <h3><span class="dot" style="background:var(--sage);"></span>Income 💚</h3>
+        <div class="line-item">
+          <div>
+            <label>Parents' gift</label>
+            <div class="li-note">given</div>
+          </div>
+          <div class="li-val income-color">$100.00</div>
+        </div>
+        <div class="line-item">
+          <div>
+            <label>Relatives' gift</label>
+            <div class="li-note">given</div>
+          </div>
+          <div class="li-val income-color">$50.00</div>
+        </div>
+        <div class="total-line">
+          <div class="tl-label">Total Income</div>
+          <div class="tl-val income-color">$150.00</div>
+        </div>
+      </div>
+
+      <!-- EXPENSES -->
+      <div class="budget-section">
+        <h3><span class="dot" style="background:var(--rose);"></span>Expenses ❤️</h3>
+        <div class="line-item">
+          <div>
+            <label>Cake 🎂</label>
+            <div class="li-note" id="cake-note">$35.00</div>
+          </div>
+          <div class="li-val expense-color" id="cake-val">$35.00</div>
+        </div>
+        <div class="line-item">
+          <div>
+            <label>Decorations 🎈</label>
+            <div class="li-note">$20.00</div>
+          </div>
+          <div class="li-val expense-color">$20.00</div>
+        </div>
+        <div class="line-item">
+          <div>
+            <label>Party bags (10 × $3.00) 🎁</label>
+            <div class="li-note">10 × $3.00</div>
+          </div>
+          <div class="li-val expense-color">$30.00</div>
+        </div>
+        <div class="total-line">
+          <div class="tl-label">Total Expenses</div>
+          <div class="tl-val expense-color" id="party-exp-total">$85.00</div>
+        </div>
+      </div>
+
+      <!-- BALANCE BAR -->
+      <div class="balance-bar" id="party-balance-bar">
+        <div class="bal-label">Games &amp; Activities Budget</div>
+        <div class="bal-amount income-color" id="party-balance">$65.00</div>
+        <div class="bal-note" id="party-bal-note">$150.00 income − $85.00 expenses = <strong>$65.00 for games &amp; fun!</strong></div>
+      </div>
+
+      <!-- SCENARIO -->
+      <div class="scenario-q">
+        <h4>⚠️ What if the cake is unexpectedly $45?</h4>
+        <p>The cake shop changes its price. How does a $10 increase affect your budget? What could you adjust?</p>
+        <div class="diff-row">
+          <div class="diff-tag" onclick="pickDiff(this,'new-balance')">Calculate new balance</div>
+          <div class="diff-tag" onclick="pickDiff(this,'adjust')">Adjust another expense</div>
+          <div class="diff-tag" onclick="pickDiff(this,'accept')">Accept less for games</div>
+        </div>
+        <div class="scenario-result" id="party-scenario-result"></div>
+      </div>
+
+    </div>
+
+    <div class="whiteboard" style="margin-top:4px;">
+      <label>📝 Write your number sentences</label>
+      <textarea placeholder="Total income = $100 + $50 = $150&#10;Total expenses = $35 + $20 + (10 × $3) = $35 + $20 + $30 = $85&#10;Games budget = $150 − $85 = $65&#10;&#10;If cake = $45: new expenses = $45 + $20 + $30 = $95&#10;New games budget = $150 − $95 = $55"></textarea>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- 4 · WRAP-UP -->
+  <!-- ═══════════════════════════════════ -->
+  <div class="card" id="sec4">
+    <div class="card-header">
+      <div class="ch-icon" style="background:var(--mist);">🏁</div>
+      <div class="ch-text">
+        <h2>The Value of a Plan</h2>
+        <p>Reflect on what you've learned today</p>
+      </div>
+      <span class="time-chip">⏱ 5 mins</span>
+    </div>
+
+    <div style="background:var(--ink);color:white;border-radius:14px;padding:24px;text-align:center;margin-bottom:22px;">
+      <div style="font-size:2rem;margin-bottom:10px;">🤔</div>
+      <h3 style="font-family:'DM Serif Display',serif;font-size:1.35rem;margin-bottom:8px;">What did you learn about planning your money?</h3>
+      <p style="font-size:.88rem;opacity:.8;line-height:1.6;">Click the ideas that match what you discovered in this session.</p>
+    </div>
+
+    <div class="reflection-cards">
+      <div class="ref-card" onclick="pickRef(this)">
+        <div class="rc-icon">🗺️</div>
+        <h4>See where money goes</h4>
+        <p>A budget shows every expense clearly so nothing is forgotten or surprising.</p>
+      </div>
+      <div class="ref-card" onclick="pickRef(this)">
+        <div class="rc-icon">⚖️</div>
+        <h4>Make better choices</h4>
+        <p>When you can't afford everything, a plan helps you decide what matters most.</p>
+      </div>
+      <div class="ref-card" onclick="pickRef(this)">
+        <div class="rc-icon">🛡️</div>
+        <h4>Ensure you have enough</h4>
+        <p>Check before you spend — know if you have a surplus or need to adjust.</p>
+      </div>
+    </div>
+
+    <div class="checklist">
+      <h3>✅ Session 4 Learning Checklist — tick what you can do:</h3>
+      <div class="cl-item" onclick="tickItem(this)">
+        <div class="cl-box">✓</div>
+        <div class="cl-text">I can explain what income, expenses and savings mean</div>
+      </div>
+      <div class="cl-item" onclick="tickItem(this)">
+        <div class="cl-box">✓</div>
+        <div class="cl-text">I can write number sentences for each line item in a budget</div>
+      </div>
+      <div class="cl-item" onclick="tickItem(this)">
+        <div class="cl-box">✓</div>
+        <div class="cl-text">I can calculate total income and total expenses using multiplication and addition</div>
+      </div>
+      <div class="cl-item" onclick="tickItem(this)">
+        <div class="cl-box">✓</div>
+        <div class="cl-text">I can find the balance (income − expenses) and say whether it's a surplus or deficit</div>
+      </div>
+      <div class="cl-item" onclick="tickItem(this)">
+        <div class="cl-box">✓</div>
+        <div class="cl-text">I can explain how an unexpected cost changes a budget and suggest adjustments</div>
+      </div>
+    </div>
+
+    <div class="final-note" id="final-note">
+      <h3>🎉 Session Complete!</h3>
+      <p>You can now build a real financial plan from scratch — calculating income, expenses, balance, and adapting when things change. That's a genuine life skill!</p>
+    </div>
+  </div>
+
+  <!-- FOOTER NAV -->
+  <div class="nav-foot">
+    <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Previous</button>
+    <span class="step-lbl" id="stepLbl">Step 1 of 5</span>
+    <button class="nav-btn fwd" id="nextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+let cur = 0;
+const N = 5;
+
+function goTo(n) {
+  document.querySelectorAll('.card').forEach((c,i)=>{
+    c.classList.toggle('active', i===n);
+    if(i===n){c.style.animation='none';void c.offsetWidth;c.style.animation='';}
+  });
+  document.querySelectorAll('.pb-seg').forEach((b,i)=>b.classList.toggle('active',i===n));
+  cur = n;
+  document.getElementById('prevBtn').disabled = n===0;
+  document.getElementById('nextBtn').disabled = n===N-1;
+  document.getElementById('stepLbl').textContent = `Step ${n+1} of ${N}`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function navigate(d){ goTo(Math.max(0,Math.min(N-1,cur+d))); }
+
+function showWU(btn, ans, note) {
+  const box = btn.nextElementSibling;
+  box.innerHTML = `<strong>${ans}</strong> &nbsp;·&nbsp; <span style="font-weight:500;font-size:.82rem;color:#667;">${note}</span>`;
+  box.classList.add('show');
+  btn.textContent = '✓';
+  btn.disabled = true;
+}
+
+function reveal(el, val) {
+  el.textContent = val;
+  el.classList.add('shown');
+  el.style.cursor = 'default';
+  el.onclick = null;
+}
+
+function showExcursionResult() {
+  document.getElementById('exc-result').classList.add('show');
+  // tick all unrevealed cells
+  document.querySelectorAll('.reveal-cell:not(.shown)').forEach(c=>{
+    const map = {
+      '$200.00':true,'$300.00':true,'$500.00':true,
+      '$250.00':true,'$160.00':true,'$70.00':true,'$480.00':true
+    };
+    // reveal by reading data
+    c.classList.add('shown');
+  });
+}
+
+function pickDiff(el, type) {
+  document.querySelectorAll('.diff-tag').forEach(t=>t.classList.remove('chosen'));
+  el.classList.add('chosen');
+  const res = document.getElementById('party-scenario-result');
+  const msgs = {
+    'new-balance': '💡 New expenses = $45 + $20 + $30 = <strong>$95.00</strong>. New games budget = $150 − $95 = <strong>$55.00</strong>. You still have money for games — just $10 less than planned!',
+    'adjust': '💡 Smart thinking! You could reduce decorations to $10 (saving $10) to keep your games budget at $65. A budget helps you make these trade-off decisions.',
+    'accept': '💡 That works too! Accepting $55 for games instead of $65 is a valid choice — especially if the nicer cake is worth it to you. Budgeting is about making informed choices.'
+  };
+  res.innerHTML = msgs[type];
+  res.classList.add('show');
+
+  // update the balance display for the "new-balance" option
+  if(type === 'new-balance'){
+    document.getElementById('cake-val').textContent = '$45.00';
+    document.getElementById('cake-note').textContent = '$45.00 (updated)';
+    document.getElementById('party-exp-total').textContent = '$95.00';
+    document.getElementById('party-balance').textContent = '$55.00';
+    document.getElementById('party-balance').style.color = 'var(--amber)';
+    document.getElementById('party-bal-note').innerHTML = '$150.00 income − $95.00 expenses = <strong>$55.00 for games</strong> (down $10)';
+  }
+}
+
+function pickRef(el) {
+  el.classList.toggle('picked');
+  const n = document.querySelectorAll('.ref-card.picked').length;
+  if(n >= 1) document.getElementById('final-note').classList.add('show');
+}
+
+function tickItem(el) {
+  el.querySelector('.cl-box').classList.toggle('checked');
+}
+</script>
+</body>
+</html>

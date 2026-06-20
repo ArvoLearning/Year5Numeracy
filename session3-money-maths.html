@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 3 – Multiplicative Money Problems</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal:   #0db3a6;
+    --mint:   #e0faf8;
+    --gold:   #f5a623;
+    --coral:  #ff6b6b;
+    --navy:   #1a2f4a;
+    --slate:  #3d5a7a;
+    --cream:  #fffdf6;
+    --green:  #27ae60;
+    --purple: #8b5cf6;
+    --sky:    #38bdf8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--navy);
+    color: var(--navy);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── ANIMATED BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 30%, #0db3a622 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 70%, #f5a62315 0%, transparent 70%),
+      linear-gradient(160deg, #1a2f4a 0%, #0f2038 100%);
+  }
+
+  /* floating coins */
+  .coin {
+    position: fixed; font-size: 1.6rem; opacity: 0.12; z-index: 0;
+    animation: floatCoin 12s linear infinite;
+  }
+  @keyframes floatCoin {
+    0%   { transform: translateY(110vh) rotate(0deg);   opacity: 0; }
+    10%  { opacity: 0.12; }
+    90%  { opacity: 0.12; }
+    100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+  }
+
+  /* ── LAYOUT ── */
+  #app {
+    position: relative; z-index: 1;
+    max-width: 980px; margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center; margin-bottom: 28px;
+    animation: slideDown .6s ease both;
+  }
+  @keyframes slideDown { from { opacity:0; transform:translateY(-24px); } to { opacity:1; transform:none; } }
+
+  .session-badge {
+    display: inline-block;
+    background: var(--gold); color: var(--navy);
+    font-weight: 900; font-size: .78rem; letter-spacing: .12em;
+    text-transform: uppercase; border-radius: 20px;
+    padding: 5px 18px; margin-bottom: 12px;
+  }
+  header h1 {
+    font-family: 'Fredoka One', sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: #fff; line-height: 1.1;
+  }
+  header h1 span { color: var(--gold); }
+  .outcome-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+    color: #c8e8ff; border-radius: 30px;
+    padding: 8px 18px; font-size: .85rem; margin-top: 12px;
+  }
+  .outcome-pill .dot { width:8px; height:8px; border-radius:50%; background:var(--teal); flex-shrink:0; }
+
+  /* ── PROGRESS NAV ── */
+  .progress-nav {
+    display: flex; gap: 6px; justify-content: center;
+    margin-bottom: 26px; flex-wrap: wrap;
+    animation: slideDown .7s .1s ease both;
+  }
+  .pnav-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    background: rgba(255,255,255,.07); border: 1.5px solid rgba(255,255,255,.12);
+    color: rgba(255,255,255,.6); border-radius: 14px;
+    padding: 9px 14px; cursor: pointer; transition: all .25s;
+    font-family: 'Nunito', sans-serif; font-size: .74rem; font-weight: 700;
+    min-width: 80px;
+  }
+  .pnav-btn .pnav-icon { font-size: 1.2rem; }
+  .pnav-btn.active {
+    background: var(--teal); border-color: var(--teal);
+    color: #fff; transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(13,179,166,.4);
+  }
+  .pnav-btn:hover:not(.active) { background: rgba(255,255,255,.13); color: #fff; }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    background: var(--cream);
+    border-radius: 24px; padding: 32px;
+    box-shadow: 0 12px 48px rgba(0,0,0,.35);
+    animation: fadeUp .45s ease both;
+    display: none;
+  }
+  .section-card.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+
+  .section-header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+  }
+  .section-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 1.55rem; color: var(--navy);
+  }
+  .section-header .time-tag {
+    margin-left: auto; background: var(--navy); color: #fff;
+    border-radius: 20px; padding: 4px 14px; font-size: .78rem; font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* ── QUICK CHECK ── */
+  .qc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .qc-card {
+    background: white; border-radius: 16px;
+    border: 2.5px solid #e0e8f0; padding: 20px;
+    text-align: center;
+  }
+  .qc-card .problem {
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 1.6rem; color: var(--navy); margin-bottom: 14px;
+  }
+  .reveal-btn {
+    background: var(--teal); color: white;
+    border: none; border-radius: 10px;
+    padding: 8px 20px; font-size: .9rem; font-weight: 800;
+    cursor: pointer; transition: all .2s;
+    font-family: 'Nunito', sans-serif;
+  }
+  .reveal-btn:hover { background: #0a9d91; transform: scale(1.04); }
+  .answer-box {
+    display: none; margin-top: 12px;
+    background: var(--mint); border-radius: 10px;
+    padding: 10px; font-size: 1.3rem; font-weight: 900;
+    color: var(--teal);
+  }
+  .answer-box.show { display: block; animation: pop .3s ease; }
+  @keyframes pop { from { transform:scale(.85); opacity:0; } to { transform:scale(1); opacity:1; } }
+
+  /* ── INFO TYPES ── */
+  .type-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+  .type-card {
+    border-radius: 16px; padding: 18px 14px; text-align: center;
+    border: 2.5px solid transparent;
+  }
+  .type-card .t-icon { font-size: 2rem; margin-bottom: 8px; }
+  .type-card h3 { font-size: 1rem; font-weight: 900; margin-bottom: 6px; }
+  .type-card p { font-size: .8rem; line-height: 1.45; color: #556; }
+
+  .type-purchase { background:#fff3e0; border-color:#f5a623; }
+  .type-sub      { background:#e3f2fd; border-color:#38bdf8; }
+  .type-split    { background:#fce4ec; border-color:#ff6b6b; }
+
+  .tip-box {
+    background: var(--navy); color: #c8e8ff;
+    border-radius: 14px; padding: 16px 20px;
+    font-size: .9rem; line-height: 1.6;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .tip-box .tip-icon { font-size: 1.4rem; flex-shrink:0; margin-top:2px; }
+
+  /* ── SUBSCRIPTION CALCULATOR ── */
+  .scenario-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stab {
+    background: #e8eef5; border: none; border-radius: 10px;
+    padding: 8px 18px; font-family: 'Nunito',sans-serif;
+    font-weight: 800; font-size: .85rem; cursor: pointer;
+    color: var(--slate); transition: all .2s;
+  }
+  .stab.active { background: var(--teal); color: white; }
+
+  .scenario-panel { display: none; }
+  .scenario-panel.active { display: block; }
+
+  .scenario-box {
+    background: white; border-radius: 16px;
+    border: 2.5px solid #dde6f0; padding: 22px; margin-bottom: 16px;
+  }
+  .scenario-box .sc-q {
+    font-size: 1.05rem; font-weight: 700; color: var(--navy);
+    line-height: 1.55; margin-bottom: 14px;
+  }
+  .sc-q .highlight { color: var(--teal); font-weight: 900; }
+  .number-sentence {
+    background: var(--mint); border-radius: 10px;
+    padding: 12px 16px; font-family: 'Fredoka One', sans-serif;
+    font-size: 1.2rem; color: var(--navy); margin-bottom: 14px;
+    letter-spacing: .03em;
+  }
+
+  /* column method display */
+  .col-method {
+    display: inline-block; text-align: right;
+    font-family: 'Fredoka One', sans-serif;
+    font-size: 1.3rem; background: white;
+    border: 2px solid #dde6f0; border-radius: 12px;
+    padding: 12px 20px; margin-bottom: 14px;
+    line-height: 1.7;
+  }
+  .col-method .divider { border-top: 2.5px solid var(--navy); margin: 4px 0; }
+  .col-method .result { color: var(--green); font-size: 1.5rem; }
+
+  .answer-reveal-btn {
+    background: var(--gold); color: var(--navy); border: none;
+    border-radius: 12px; padding: 10px 24px;
+    font-family: 'Nunito',sans-serif; font-weight: 900; font-size: .95rem;
+    cursor: pointer; transition: all .2s;
+  }
+  .answer-reveal-btn:hover { background: #e09518; transform: scale(1.03); }
+
+  .answer-full {
+    display: none; margin-top: 14px;
+    background: linear-gradient(135deg, #e8f8f5, #d5f5e3);
+    border-radius: 14px; padding: 16px; border: 2px solid #a8e6cf;
+  }
+  .answer-full.show { display: block; animation: pop .3s ease; }
+  .answer-full .ans-label { font-size: .8rem; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px; }
+  .answer-full .ans-value { font-family: 'Fredoka One', sans-serif; font-size: 1.8rem; color: var(--green); }
+  .answer-full .ans-note { font-size: .85rem; color: #446; margin-top: 6px; }
+
+  /* best value compare */
+  .compare-box {
+    background: white; border-radius: 16px;
+    border: 2.5px solid #dde6f0; padding: 20px;
+  }
+  .compare-box h3 { font-weight: 900; margin-bottom: 14px; color: var(--navy); font-size: 1rem; }
+  .compare-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .c-option {
+    flex: 1; min-width: 150px; border-radius: 14px; padding: 16px;
+    text-align: center; cursor: pointer; border: 2.5px solid #dde6f0;
+    transition: all .25s;
+  }
+  .c-option:hover { border-color: var(--teal); }
+  .c-option.winner { border-color: var(--green); background: #e8f8f0; }
+  .c-option.loser  { border-color: #fcc; background: #fff0f0; }
+  .c-option .c-label { font-weight: 800; color: var(--slate); font-size: .85rem; margin-bottom: 8px; }
+  .c-option .c-price { font-family: 'Fredoka One',sans-serif; font-size: 1.6rem; color: var(--navy); }
+  .c-option .c-badge { display: none; font-size: .78rem; font-weight: 900; margin-top: 6px; padding: 3px 10px; border-radius: 20px; }
+  .c-option.winner .c-badge { display: inline-block; background: var(--green); color: white; }
+  .c-option.loser  .c-badge { display: inline-block; background: var(--coral); color: white; }
+  .compare-reveal { background: var(--purple); color: white; border: none; border-radius: 10px; padding: 9px 22px; font-family: 'Nunito',sans-serif; font-weight: 800; cursor: pointer; transition: all .2s; }
+  .compare-reveal:hover { background: #7c3aed; }
+
+  /* ── PRACTICE PROBLEMS ── */
+  .problems-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:600px){ .problems-grid, .type-grid, .qc-grid { grid-template-columns: 1fr; } }
+
+  .prob-card {
+    background: white; border-radius: 16px;
+    border: 2.5px solid #dde6f0; padding: 20px;
+    cursor: pointer; transition: all .25s; position: relative;
+    overflow: hidden;
+  }
+  .prob-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 5px; height: 100%; border-radius: 5px 0 0 5px;
+  }
+  .prob-card.c1::before { background: var(--teal); }
+  .prob-card.c2::before { background: var(--gold); }
+  .prob-card.c3::before { background: var(--coral); }
+  .prob-card.c4::before { background: var(--purple); }
+  .prob-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+  .prob-card .prob-num {
+    font-size: .75rem; font-weight: 900; text-transform: uppercase;
+    letter-spacing: .1em; color: #999; margin-bottom: 8px;
+  }
+  .prob-card .prob-q { font-size: .92rem; line-height: 1.55; font-weight: 700; color: var(--navy); margin-bottom: 12px; }
+  .prob-card .prob-ns {
+    background: #f0f4f8; border-radius: 8px;
+    padding: 8px 12px; font-family: 'Fredoka One',sans-serif;
+    font-size: 1rem; color: var(--slate); margin-bottom: 10px;
+  }
+  .prob-card .prob-answer {
+    display: none; background: #e8f8f0; border-radius: 8px;
+    padding: 8px 12px; font-family: 'Fredoka One',sans-serif;
+    font-size: 1.1rem; color: var(--green); font-weight: 700;
+    animation: pop .3s ease;
+  }
+  .prob-card .prob-answer.show { display: block; }
+  .prob-card .show-btn {
+    background: none; border: 2px solid currentColor;
+    border-radius: 8px; padding: 5px 14px; font-family: 'Nunito',sans-serif;
+    font-weight: 800; font-size: .8rem; cursor: pointer; transition: all .2s;
+  }
+  .prob-card.c1 .show-btn { color: var(--teal); }
+  .prob-card.c2 .show-btn { color: var(--gold); }
+  .prob-card.c3 .show-btn { color: var(--coral); }
+  .prob-card.c4 .show-btn { color: var(--purple); }
+  .prob-card .show-btn:hover { transform: scale(1.05); }
+
+  /* ── WHITEBOARD INPUT ── */
+  .whiteboard {
+    background: white; border-radius: 16px;
+    border: 2.5px dashed #c0d0e0; padding: 16px;
+    margin-top: 16px;
+  }
+  .whiteboard label { font-weight: 800; font-size: .82rem; color: #778; text-transform: uppercase; letter-spacing: .1em; display: block; margin-bottom: 8px; }
+  .whiteboard textarea {
+    width: 100%; border: none; resize: vertical;
+    font-family: 'Nunito', sans-serif; font-size: 1rem;
+    color: var(--navy); min-height: 80px; outline: none;
+    line-height: 1.6;
+  }
+
+  /* ── WRAP-UP ── */
+  .wu-question {
+    background: linear-gradient(135deg, #1a2f4a, #0f4c6e);
+    border-radius: 20px; padding: 28px; color: white;
+    margin-bottom: 20px; text-align: center;
+  }
+  .wu-question .wu-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .wu-question h3 { font-family: 'Fredoka One',sans-serif; font-size: 1.4rem; margin-bottom: 8px; }
+  .wu-question p { color: #a8d4f0; font-size: .95rem; line-height: 1.6; }
+
+  .wu-reasons { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+  @media(max-width:600px){ .wu-reasons { grid-template-columns: 1fr; } }
+  .wu-reason {
+    border-radius: 16px; padding: 18px; text-align: center;
+    cursor: pointer; border: 2.5px solid transparent; transition: all .25s;
+    opacity: .75;
+  }
+  .wu-reason:hover, .wu-reason.selected { opacity: 1; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.1); }
+  .wu-reason.r1 { background: #fff3e0; border-color: #f5a623; }
+  .wu-reason.r2 { background: #e3f2fd; border-color: #38bdf8; }
+  .wu-reason.r3 { background: #f3e8ff; border-color: #8b5cf6; }
+  .wu-reason .r-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .wu-reason h4 { font-weight: 900; font-size: .9rem; color: var(--navy); margin-bottom: 4px; }
+  .wu-reason p { font-size: .78rem; color: #556; line-height: 1.4; }
+
+  .congrats-banner {
+    display: none; background: linear-gradient(90deg, var(--green), var(--teal));
+    border-radius: 16px; padding: 20px; color: white; text-align: center;
+    animation: pop .4s ease;
+  }
+  .congrats-banner.show { display: block; }
+  .congrats-banner h3 { font-family: 'Fredoka One',sans-serif; font-size: 1.4rem; margin-bottom: 6px; }
+  .congrats-banner p { font-size: .9rem; opacity: .9; }
+
+  /* ── NAV FOOTER ── */
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 28px;
+  }
+  .nav-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--navy); color: white; border: none;
+    border-radius: 14px; padding: 12px 24px;
+    font-family: 'Nunito',sans-serif; font-weight: 800; font-size: .95rem;
+    cursor: pointer; transition: all .25s;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  }
+  .nav-btn:hover { background: var(--slate); transform: translateY(-2px); }
+  .nav-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+  .nav-btn.next-btn { background: var(--teal); }
+  .nav-btn.next-btn:hover { background: #0a9d91; }
+
+  .step-counter { color: rgba(255,255,255,.5); font-size: .85rem; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- floating coins -->
+<script>
+  const emojis = ['💰','💵','🪙','💳','💴','💶'];
+  for(let i=0;i<14;i++){
+    const d=document.createElement('div');
+    d.className='coin'; d.textContent=emojis[i%emojis.length];
+    d.style.left=Math.random()*100+'vw';
+    d.style.animationDelay=Math.random()*12+'s';
+    d.style.animationDuration=(9+Math.random()*8)+'s';
+    document.body.appendChild(d);
+  }
+</script>
+
+<div id="app">
+
+  <header>
+    <div class="session-badge">Session 3 · Year 5/6 Maths</div>
+    <h1>Multiplicative <span>Money</span> Problems</h1>
+    <div class="outcome-pill">
+      <span class="dot"></span>
+      Solve repeated purchases, subscriptions & bills using multiplicative strategies
+    </div>
+  </header>
+
+  <!-- Progress Nav -->
+  <nav class="progress-nav">
+    <button class="pnav-btn active" onclick="goTo(0)"><span class="pnav-icon">⚡</span>Warm-up</button>
+    <button class="pnav-btn" onclick="goTo(1)"><span class="pnav-icon">💡</span>Intro</button>
+    <button class="pnav-btn" onclick="goTo(2)"><span class="pnav-icon">🧮</span>Deep Dive</button>
+    <button class="pnav-btn" onclick="goTo(3)"><span class="pnav-icon">✏️</span>Practice</button>
+    <button class="pnav-btn" onclick="goTo(4)"><span class="pnav-icon">🏁</span>Wrap-up</button>
+  </nav>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION 0: WARM-UP -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section-card active" id="sec0">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fff3e0;">⚡</div>
+      <div>
+        <h2>Decimal Multiplication Quick Check</h2>
+        <p style="font-size:.85rem;color:#667;margin-top:2px;">Can you solve these in your head?</p>
+      </div>
+      <span class="time-tag">⏱ 5 mins</span>
+    </div>
+
+    <div class="qc-grid">
+      <div class="qc-card">
+        <div class="problem">$2.50 × 4 = ?</div>
+        <button class="reveal-btn" onclick="showAns(this,'$10.00','Think: 250 × 4 = 1000 → $10.00')">Reveal Answer</button>
+        <div class="answer-box"></div>
+      </div>
+      <div class="qc-card">
+        <div class="problem">$1.20 × 3 = ?</div>
+        <button class="reveal-btn" onclick="showAns(this,'$3.60','Think: 120 × 3 = 360 → $3.60')">Reveal Answer</button>
+        <div class="answer-box"></div>
+      </div>
+      <div class="qc-card">
+        <div class="problem">$5.00 × 6 = ?</div>
+        <button class="reveal-btn" onclick="showAns(this,'$30.00','5 × 6 = 30, easy!')">Reveal Answer</button>
+        <div class="answer-box"></div>
+      </div>
+      <div class="qc-card">
+        <div class="problem">$3.50 × 8 = ?</div>
+        <button class="reveal-btn" onclick="showAns(this,'$28.00','Think: 350 × 8 = 2800 → $28.00')">Reveal Answer</button>
+        <div class="answer-box"></div>
+      </div>
+    </div>
+
+    <div class="whiteboard" style="margin-top:20px;">
+      <label>📝 Student Working Space</label>
+      <textarea placeholder="Write your working out here..."></textarea>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION 1: INTRODUCTION -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section-card" id="sec1">
+    <div class="section-header">
+      <div class="section-icon" style="background:#e3f2fd;">💡</div>
+      <div>
+        <h2>Real-World Money Maths</h2>
+        <p style="font-size:.85rem;color:#667;margin-top:2px;">Three types of money problems that use multiplication</p>
+      </div>
+      <span class="time-tag">⏱ 10 mins</span>
+    </div>
+
+    <div class="type-grid">
+      <div class="type-card type-purchase">
+        <div class="t-icon">🛒</div>
+        <h3>Repeated Purchases</h3>
+        <p>Buying <strong>several identical items</strong>. Multiply the price by the number of items.</p>
+        <div style="margin-top:10px;font-family:'Fredoka One',sans-serif;font-size:1rem;color:#b07a10;">
+          price × quantity
+        </div>
+      </div>
+      <div class="type-card type-sub">
+        <div class="t-icon">📱</div>
+        <h3>Subscriptions</h3>
+        <p>Paying a <strong>fixed amount regularly</strong> — monthly or yearly. How much over time?</p>
+        <div style="margin-top:10px;font-family:'Fredoka One',sans-serif;font-size:1rem;color:#0275b0;">
+          cost × periods
+        </div>
+      </div>
+      <div class="type-card type-split">
+        <div class="t-icon">🤝</div>
+        <h3>Splitting Bills</h3>
+        <p>Sharing a total cost equally. Uses <strong>division</strong>, but often linked to multiplication.</p>
+        <div style="margin-top:10px;font-family:'Fredoka One',sans-serif;font-size:1rem;color:#c0344e;">
+          total ÷ people
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box" style="margin-top:20px;">
+      <span class="tip-icon">✍️</span>
+      <div>
+        <strong style="color:#fff;">Always write a number sentence first!</strong><br>
+        Before calculating, identify what you know and write it as a multiplication. This helps you avoid mistakes and shows your thinking clearly. Example: <em>"3 tickets × $28.75 = ?"</em>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;background:#f8faff;border-radius:14px;padding:18px;">
+      <p style="font-weight:800;color:var(--navy);margin-bottom:12px;">🔑 Key Strategies for Decimal Multiplication:</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div style="background:white;border-radius:10px;padding:12px;border:2px solid #e0e8f0;">
+          <p style="font-weight:900;color:var(--teal);font-size:.85rem;margin-bottom:4px;">COLUMN METHOD</p>
+          <p style="font-size:.82rem;color:#556;line-height:1.5;">Ignore the decimal, multiply whole numbers, then place the decimal back in.</p>
+        </div>
+        <div style="background:white;border-radius:10px;padding:12px;border:2px solid #e0e8f0;">
+          <p style="font-weight:900;color:var(--gold);font-size:.85rem;margin-bottom:4px;">BREAKING APART</p>
+          <p style="font-size:.82rem;color:#556;line-height:1.5;">Split the price into dollars and cents: $12.99 → ($12 × 12) + ($0.99 × 12)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION 2: DEEP DIVE – SUBSCRIPTION CALC -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section-card" id="sec2">
+    <div class="section-header">
+      <div class="section-icon" style="background:#e8f8f5;">🧮</div>
+      <div>
+        <h2>Subscription Calculator</h2>
+        <p style="font-size:.85rem;color:#667;margin-top:2px;">Solve each scenario step-by-step</p>
+      </div>
+      <span class="time-tag">⏱ 15 mins</span>
+    </div>
+
+    <div class="scenario-tabs">
+      <button class="stab active" onclick="switchScenario(0)">Scenario 1 🎵</button>
+      <button class="stab" onclick="switchScenario(1)">Scenario 2 💪</button>
+      <button class="stab" onclick="switchScenario(2)">Scenario 3 📰</button>
+      <button class="stab" onclick="switchScenario(3)">Best Value? ⭐</button>
+    </div>
+
+    <!-- Scenario 1 -->
+    <div class="scenario-panel active" id="sp0">
+      <div class="scenario-box">
+        <p class="sc-q">🎵 A monthly <span class="highlight">music streaming subscription</span> costs <span class="highlight">$12.99</span>. How much will it cost for a <span class="highlight">year</span>?</p>
+        <div class="number-sentence">$12.99 × 12 = ?</div>
+        <div class="col-method">
+          <div>&nbsp;&nbsp;1 2 . 9 9</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;× 1 2</div>
+          <div class="divider"></div>
+          <div>&nbsp;&nbsp;2 5 . 9 8 &nbsp;<span style="font-size:.75rem;color:#aaa;">(×2)</span></div>
+          <div>1 2 9 . 9 0 &nbsp;<span style="font-size:.75rem;color:#aaa;">(×10)</span></div>
+          <div class="divider"></div>
+          <div class="result">$155.88</div>
+        </div>
+        <br>
+        <button class="answer-reveal-btn" onclick="showFullAns(this)">Show Full Answer ✨</button>
+        <div class="answer-full">
+          <div class="ans-label">Annual Cost</div>
+          <div class="ans-value">$155.88</div>
+          <div class="ans-note">$12.99 × 12 = $155.88 per year</div>
+        </div>
+      </div>
+      <div class="whiteboard">
+        <label>📝 Your Working</label>
+        <textarea placeholder="Write your column method or breaking-apart working here..."></textarea>
+      </div>
+    </div>
+
+    <!-- Scenario 2 -->
+    <div class="scenario-panel" id="sp1">
+      <div class="scenario-box">
+        <p class="sc-q">💪 A <span class="highlight">gym membership</span> costs <span class="highlight">$35.50</span> per month. How much does it cost for <span class="highlight">6 months</span>?</p>
+        <div class="number-sentence">$35.50 × 6 = ?</div>
+        <div class="col-method">
+          <div>&nbsp;&nbsp;3 5 . 5 0</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;× 6</div>
+          <div class="divider"></div>
+          <div class="result">$213.00</div>
+        </div>
+        <br>
+        <button class="answer-reveal-btn" onclick="showFullAns(this)">Show Full Answer ✨</button>
+        <div class="answer-full">
+          <div class="ans-label">6-Month Cost</div>
+          <div class="ans-value">$213.00</div>
+          <div class="ans-note">$35.50 × 6 = $213.00 · Think: 3550 × 6 = 21 300 → $213.00</div>
+        </div>
+      </div>
+      <div class="whiteboard">
+        <label>📝 Your Working</label>
+        <textarea placeholder="Try breaking apart: (35 × 6) + (0.50 × 6) = ?"></textarea>
+      </div>
+    </div>
+
+    <!-- Scenario 3 -->
+    <div class="scenario-panel" id="sp2">
+      <div class="scenario-box">
+        <p class="sc-q">📰 A <span class="highlight">newspaper</span> costs <span class="highlight">$2.50</span> each day. How much does it cost for a <span class="highlight">week (7 days)</span>?</p>
+        <div class="number-sentence">$2.50 × 7 = ?</div>
+        <div class="col-method">
+          <div>&nbsp;&nbsp;2 . 5 0</div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;× 7</div>
+          <div class="divider"></div>
+          <div class="result">$17.50</div>
+        </div>
+        <br>
+        <button class="answer-reveal-btn" onclick="showFullAns(this)">Show Full Answer ✨</button>
+        <div class="answer-full">
+          <div class="ans-label">Weekly Cost</div>
+          <div class="ans-value">$17.50</div>
+          <div class="ans-note">$2.50 × 7 = $17.50 · Think: half of 7 = $3.50, times 5 = $17.50</div>
+        </div>
+      </div>
+      <div class="whiteboard">
+        <label>📝 Your Working</label>
+        <textarea placeholder="What's the monthly cost? What about the yearly cost?"></textarea>
+      </div>
+    </div>
+
+    <!-- Best Value -->
+    <div class="scenario-panel" id="sp3">
+      <div class="compare-box">
+        <h3>⭐ Best Value Challenge: Music Streaming</h3>
+        <p style="font-size:.88rem;color:#556;margin-bottom:16px;line-height:1.6;">
+          Option A: Pay <strong>$12.99 per month</strong> (cancel anytime).<br>
+          Option B: Pay <strong>$120 upfront</strong> for a full year.<br>
+          Which is cheaper over 12 months?
+        </p>
+        <div class="compare-row">
+          <div class="c-option" id="opt-monthly">
+            <div class="c-label">Monthly Plan (×12)</div>
+            <div class="c-price">$155.88</div>
+            <div style="font-size:.78rem;color:#888;margin-top:4px;">$12.99 × 12</div>
+            <div class="c-badge">More Expensive</div>
+          </div>
+          <div class="c-option" id="opt-yearly">
+            <div class="c-label">Yearly Plan (upfront)</div>
+            <div class="c-price">$120.00</div>
+            <div style="font-size:.78rem;color:#888;margin-top:4px;">Fixed price</div>
+            <div class="c-badge">Best Value! 🎉</div>
+          </div>
+        </div>
+        <button class="compare-reveal" onclick="revealBestValue()">Show Which is Cheaper 🔍</button>
+        <div id="bv-result" style="display:none;margin-top:16px;background:#e8f8f0;border-radius:12px;padding:14px;">
+          <p style="font-weight:800;color:var(--green);margin-bottom:6px;">✅ The Yearly Plan saves $35.88!</p>
+          <p style="font-size:.85rem;color:#446;line-height:1.5;">$155.88 − $120.00 = <strong>$35.88 saved</strong> by paying upfront. That's nearly 3 months free!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION 3: PRACTICE -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section-card" id="sec3">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fef3c7;">✏️</div>
+      <div>
+        <h2>Mixed Money Problems</h2>
+        <p style="font-size:.85rem;color:#667;margin-top:2px;">Write the number sentence, then solve! Click a card to reveal the answer.</p>
+      </div>
+      <span class="time-tag">⏱ 15 mins</span>
+    </div>
+
+    <div class="problems-grid">
+
+      <div class="prob-card c1">
+        <div class="prob-num">Problem 1 · Party Pizzas 🍕</div>
+        <div class="prob-q">You are organising a class party. You need <strong>25 small pizzas</strong>, and each costs <strong>$10.50</strong>. What is the total cost?</div>
+        <div class="prob-ns">$10.50 × 25 = ?</div>
+        <button class="show-btn" onclick="revealProb(this)">Show Answer</button>
+        <div class="prob-answer">$262.50 🍕<br><span style="font-size:.78rem;color:#556;">Think: $10 × 25 = $250, then $0.50 × 25 = $12.50. Add: $262.50</span></div>
+      </div>
+
+      <div class="prob-card c2">
+        <div class="prob-num">Problem 2 · Concert Tickets 🎸</div>
+        <div class="prob-q">Three friends went to a concert. Each ticket cost <strong>$28.75</strong>. How much did they pay in total?</div>
+        <div class="prob-ns">$28.75 × 3 = ?</div>
+        <button class="show-btn" onclick="revealProb(this)">Show Answer</button>
+        <div class="prob-answer">$86.25 🎸<br><span style="font-size:.78rem;color:#556;">$28 × 3 = $84, then $0.75 × 3 = $2.25. Add: $86.25</span></div>
+      </div>
+
+      <div class="prob-card c3">
+        <div class="prob-num">Problem 3 · School Bus Pass 🚌</div>
+        <div class="prob-q">A school bus pass costs <strong>$45.20 per term</strong>. How much does it cost for <strong>4 terms</strong> (a full year)?</div>
+        <div class="prob-ns">$45.20 × 4 = ?</div>
+        <button class="show-btn" onclick="revealProb(this)">Show Answer</button>
+        <div class="prob-answer">$180.80 🚌<br><span style="font-size:.78rem;color:#556;">$45 × 4 = $180, then $0.20 × 4 = $0.80. Add: $180.80</span></div>
+      </div>
+
+      <div class="prob-card c4">
+        <div class="prob-num">Problem 4 · Savings Goal 🐖</div>
+        <div class="prob-q">You want to save $500. You put <strong>$15.50</strong> into your account each week. After <strong>10 weeks</strong>, how much have you saved?</div>
+        <div class="prob-ns">$15.50 × 10 = ?</div>
+        <button class="show-btn" onclick="revealProb(this)">Show Answer</button>
+        <div class="prob-answer">$155.00 🐖<br><span style="font-size:.78rem;color:#556;">× 10 is easy! Move the decimal: $155.00. Still $345 to go!</span></div>
+      </div>
+
+    </div>
+
+    <div class="whiteboard" style="margin-top:18px;">
+      <label>📝 Show Your Working (Column Method)</label>
+      <textarea placeholder="Choose a problem and write out your full column method working here...&#10;&#10;e.g.   1 0 . 5 0&#10;         × 2 5&#10;      ─────────&#10;         5 2 . 5 0  (×5)&#10;     2 1 0 . 0 0  (×20)&#10;      ─────────&#10;      2 6 2 . 5 0"></textarea>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION 4: WRAP-UP -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section-card" id="sec4">
+    <div class="section-header">
+      <div class="section-icon" style="background:#f3e8ff;">🏁</div>
+      <div>
+        <h2>Smart Money Choices</h2>
+        <p style="font-size:.85rem;color:#667;margin-top:2px;">Reflect and consolidate your learning</p>
+      </div>
+      <span class="time-tag">⏱ 5 mins</span>
+    </div>
+
+    <div class="wu-question">
+      <div class="wu-icon">🤔</div>
+      <h3>Why is it important to be able to do these calculations?</h3>
+      <p>When you're planning purchases or subscriptions in real life, why does this maths matter?</p>
+    </div>
+
+    <p style="font-weight:800;color:var(--navy);margin-bottom:12px;font-size:.9rem;">Click the reasons you think are most important:</p>
+    <div class="wu-reasons">
+      <div class="wu-reason r1" onclick="selectReason(this)">
+        <div class="r-icon">📊</div>
+        <h4>Budget Better</h4>
+        <p>Know exactly how much you'll spend so you don't run out of money.</p>
+      </div>
+      <div class="wu-reason r2" onclick="selectReason(this)">
+        <div class="r-icon">🔍</div>
+        <h4>Compare Options</h4>
+        <p>Figure out which deal is actually cheaper over time — like monthly vs yearly.</p>
+      </div>
+      <div class="wu-reason r3" onclick="selectReason(this)">
+        <div class="r-icon">🚫</div>
+        <h4>Avoid Overspending</h4>
+        <p>Catch sneaky subscription costs before they add up to a big surprise!</p>
+      </div>
+    </div>
+
+    <div id="congrats" class="congrats-banner">
+      <h3>🎉 Great thinking! Session Complete!</h3>
+      <p>You can now solve repeated purchases, subscription costs, and compare value — real-life superpower skills!</p>
+    </div>
+
+    <div style="background:#f0f4f8;border-radius:16px;padding:20px;margin-top:16px;">
+      <p style="font-weight:800;color:var(--navy);margin-bottom:12px;">📋 Session 3 Summary — What We Learned:</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="color:var(--teal);font-size:1.1rem;flex-shrink:0;">✅</span>
+          <span style="font-size:.88rem;color:#334;line-height:1.5;"><strong>Repeated purchases</strong>: multiply price × quantity (e.g. 25 pizzas × $10.50)</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="color:var(--teal);font-size:1.1rem;flex-shrink:0;">✅</span>
+          <span style="font-size:.88rem;color:#334;line-height:1.5;"><strong>Subscriptions</strong>: multiply cost × number of periods (monthly × 12 for yearly)</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="color:var(--teal);font-size:1.1rem;flex-shrink:0;">✅</span>
+          <span style="font-size:.88rem;color:#334;line-height:1.5;"><strong>Column method</strong> & <strong>breaking apart</strong> both work for decimal multiplication</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="color:var(--teal);font-size:1.1rem;flex-shrink:0;">✅</span>
+          <span style="font-size:.88rem;color:#334;line-height:1.5;"><strong>Always write a number sentence first</strong> to organise your thinking</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="color:var(--gold);font-size:1.1rem;flex-shrink:0;">⭐</span>
+          <span style="font-size:.88rem;color:#334;line-height:1.5;"><strong>Best value</strong>: calculate the total for each option, then compare!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Nav -->
+  <div class="nav-footer">
+    <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Previous</button>
+    <span class="step-counter" id="stepCounter">Step 1 of 5</span>
+    <button class="nav-btn next-btn" id="nextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+  let current = 0;
+  const total = 5;
+
+  function goTo(n) {
+    document.querySelectorAll('.section-card').forEach((c,i) => {
+      c.classList.toggle('active', i === n);
+      // re-trigger animation
+      if(i === n){ c.style.animation='none'; void c.offsetWidth; c.style.animation=''; }
+    });
+    document.querySelectorAll('.pnav-btn').forEach((b,i) => b.classList.toggle('active', i === n));
+    current = n;
+    document.getElementById('prevBtn').disabled = n === 0;
+    document.getElementById('nextBtn').disabled = n === total - 1;
+    document.getElementById('stepCounter').textContent = `Step ${n+1} of ${total}`;
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function navigate(dir) { goTo(Math.max(0, Math.min(total-1, current+dir))); }
+
+  function showAns(btn, ans, note) {
+    const box = btn.nextElementSibling;
+    box.innerHTML = `<strong>${ans}</strong><br><span style="font-size:.8rem;color:#556;">${note}</span>`;
+    box.classList.add('show');
+    btn.textContent = '✓ Revealed!';
+    btn.style.background = 'var(--green)';
+    btn.disabled = true;
+  }
+
+  function switchScenario(n) {
+    document.querySelectorAll('.scenario-panel').forEach((p,i) => p.classList.toggle('active', i===n));
+    document.querySelectorAll('.stab').forEach((b,i) => b.classList.toggle('active', i===n));
+  }
+
+  function showFullAns(btn) {
+    const box = btn.nextElementSibling;
+    box.classList.add('show');
+    btn.textContent = '✓ Answer Shown!';
+    btn.style.background = 'var(--green)';
+    btn.disabled = true;
+  }
+
+  function revealBestValue() {
+    document.getElementById('opt-yearly').classList.add('winner');
+    document.getElementById('opt-monthly').classList.add('loser');
+    document.getElementById('bv-result').style.display = 'block';
+  }
+
+  function revealProb(btn) {
+    const card = btn.closest('.prob-card');
+    const ans = card.querySelector('.prob-answer');
+    ans.classList.add('show');
+    btn.textContent = '✓ Answer Shown!';
+    btn.disabled = true;
+  }
+
+  function selectReason(el) {
+    el.classList.toggle('selected');
+    const selected = document.querySelectorAll('.wu-reason.selected').length;
+    if(selected >= 1) {
+      document.getElementById('congrats').classList.add('show');
+    }
+  }
+</script>
+</body>
+</html>

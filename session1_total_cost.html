@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Session 1 — Calculating Total Cost of Identical Items</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #dddbd3;
+    --border2: #c8c5bc;
+    --text: #1a1917;
+    --text2: #5a5750;
+    --text3: #9a9790;
+
+    --purple: #534AB7;
+    --purple-light: #EEEDFE;
+    --purple-dark: #3C3489;
+
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-dark: #0F6E56;
+
+    --blue: #378ADD;
+    --blue-light: #E6F1FB;
+    --blue-dark: #185FA5;
+
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --amber-dark: #633806;
+
+    --green: #639922;
+    --green-light: #EAF3DE;
+    --green-dark: #3B6D11;
+
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+    --coral-dark: #4A1B0C;
+
+    --red-light: #FCEBEB;
+    --red: #A32D2D;
+
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.07), 0 0 0 0.5px rgba(0,0,0,0.06);
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.07);
+  }
+  .logo {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: var(--purple);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 15px; font-weight: 700; flex-shrink: 0;
+  }
+  .header-info { flex: 1; min-width: 140px; }
+  .header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .header-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .phase-nav { display: flex; gap: 5px; flex-wrap: wrap; }
+  .phase-btn {
+    padding: 6px 13px; border-radius: 20px;
+    border: 1.5px solid var(--border2);
+    background: var(--surface); color: var(--text2);
+    font-size: 13px; cursor: pointer;
+    font-family: inherit; transition: all 0.15s; white-space: nowrap;
+  }
+  .phase-btn.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .phase-btn:hover:not(.active) { background: var(--surface2); }
+
+  /* ---- PROGRESS ---- */
+  .progress-wrap {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0.45rem 1.5rem;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .prog-label { font-size: 12px; color: var(--text3); white-space: nowrap; }
+  .prog-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--purple); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* ---- LAYOUT ---- */
+  main { max-width: 840px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .sec-header { margin-bottom: 1.25rem; }
+  .sec-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .sec-sub { font-size: 14px; color: var(--text2); }
+
+  /* ---- CARDS ---- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 14px; font-weight: 700; color: var(--text);
+    margin-bottom: 0.9rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .dashed-card { border: 2px dashed var(--teal); }
+  .dashed-card .card-title { color: var(--teal-dark); }
+
+  /* ---- BADGES ---- */
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 4px;
+    font-size: 12px; font-weight: 700;
+  }
+  .b-purple { background: var(--purple-light); color: var(--purple-dark); }
+  .b-teal { background: var(--teal-light); color: var(--teal-dark); }
+  .b-blue { background: var(--blue-light); color: var(--blue-dark); }
+  .b-amber { background: var(--amber-light); color: var(--amber-dark); }
+  .b-green { background: var(--green-light); color: var(--green-dark); }
+  .b-coral { background: var(--coral-light); color: var(--coral); }
+
+  /* ---- INPUTS & BUTTONS ---- */
+  .inp {
+    border: 1.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 7px 11px; font-size: 15px;
+    background: var(--surface); color: var(--text);
+    font-family: inherit; transition: border-color 0.15s;
+  }
+  .inp:focus { outline: none; border-color: var(--purple); }
+  .inp-sm { width: 90px; text-align: center; }
+  .inp-md { width: 130px; }
+
+  .btn {
+    padding: 7px 16px; border-radius: var(--radius-sm);
+    border: none; font-size: 13px; cursor: pointer;
+    font-weight: 700; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-purple { background: var(--purple); color: #fff; }
+  .btn-purple:hover { background: var(--purple-dark); }
+  .btn-teal { background: var(--teal); color: #fff; }
+  .btn-teal:hover { background: var(--teal-dark); }
+  .btn-outline { background: var(--surface); color: var(--purple); border: 1.5px solid var(--purple); }
+  .btn-outline:hover { background: var(--purple-light); }
+
+  .feedback {
+    font-size: 13px; padding: 5px 11px;
+    border-radius: 4px; font-weight: 700; display: none;
+  }
+  .fb-ok { background: var(--green-light); color: var(--green-dark); display: inline-block; }
+  .fb-no { background: var(--red-light); color: var(--red); display: inline-block; }
+
+  /* ---- WARM-UP ---- */
+  .wu-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .wu-q { font-size: 15px; min-width: 220px; flex: 1; }
+
+  /* ---- INTRO CONCEPTS ---- */
+  .concept-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px; background: var(--surface2);
+    border-radius: 8px; margin-bottom: 8px;
+  }
+  .c-icon { font-size: 24px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+  .c-label { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .c-desc { font-size: 13px; color: var(--text2); }
+
+  /* ---- EQUAL GROUPS VISUAL ---- */
+  .groups-visual { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 12px 0; }
+  .group-box {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    padding: 8px; border-radius: 8px;
+    border: 2px solid var(--purple-dark);
+    background: var(--purple-light);
+    max-width: 72px;
+  }
+  .coin { width: 20px; height: 20px; border-radius: 50%; background: var(--amber); border: 2px solid var(--amber-dark); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; }
+  .group-label { font-size: 12px; color: var(--purple-dark); font-weight: 700; text-align: center; margin-top: 4px; }
+  .plus-sign { font-size: 20px; color: var(--text3); font-weight: 300; }
+  .eq-sign { font-size: 20px; color: var(--text3); }
+  .total-box { padding: 10px 16px; border-radius: 8px; background: var(--teal-light); border: 2px solid var(--teal); font-size: 18px; font-weight: 700; color: var(--teal-dark); }
+
+  /* ---- WORKED EXAMPLES ---- */
+  .example-wrap { margin-bottom: 20px; }
+  .example-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: var(--purple-light);
+    border-radius: 8px 8px 0 0;
+    border: 1px solid #CECBF6;
+    cursor: pointer;
+    user-select: none;
+  }
+  .example-header .ex-title { font-size: 14px; font-weight: 700; color: var(--purple-dark); flex: 1; }
+  .example-header .ex-scenario { font-size: 13px; color: var(--purple); }
+  .example-body {
+    border: 1px solid #CECBF6; border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 1rem;
+    background: var(--surface);
+  }
+  .step-row { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--purple); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  }
+  .step-content { flex: 1; }
+  .step-label { font-size: 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+  .step-math { font-size: 16px; font-weight: 600; color: var(--text); background: var(--surface2); padding: 6px 12px; border-radius: 6px; display: inline-block; }
+  .step-note { font-size: 13px; color: var(--text2); margin-top: 4px; }
+  .answer-banner { padding: 10px 16px; background: var(--teal-light); border-radius: 8px; border: 1px solid #9FE1CB; font-size: 16px; font-weight: 700; color: var(--teal-dark); margin-top: 4px; }
+
+  .column-method { font-family: 'Courier New', monospace; font-size: 16px; line-height: 2; padding: 12px 20px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); display: inline-block; }
+  .col-line { border-top: 2px solid var(--text); margin: 4px 0; }
+
+  /* ---- INTERACTIVE EXAMPLE BUILDER ---- */
+  .builder-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .builder-label { font-size: 14px; color: var(--text2); }
+
+  .breakdown-display { background: var(--surface2); border-radius: 8px; padding: 1rem; font-size: 15px; line-height: 2.2; min-height: 80px; }
+  .bd-step { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+  .bd-op { font-weight: 700; color: var(--purple); width: 18px; text-align: center; }
+  .bd-eq { color: var(--text3); }
+  .bd-val { font-weight: 700; color: var(--teal-dark); background: var(--teal-light); padding: 2px 8px; border-radius: 4px; }
+  .bd-total { font-size: 17px; font-weight: 700; color: var(--teal-dark); padding: 8px 14px; background: var(--teal-light); border-radius: 8px; border: 2px solid var(--teal); display: inline-block; margin-top: 6px; }
+
+  /* ---- PRACTICE PROBLEMS ---- */
+  .problem-card { border-left: 4px solid var(--purple); }
+  .problem-scenario { font-size: 15px; color: var(--text); margin-bottom: 14px; padding: 10px 14px; background: var(--surface2); border-radius: 8px; }
+  .prob-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .prob-label { font-size: 13px; color: var(--text2); min-width: 160px; }
+
+  .reveal-btn {
+    padding: 7px 16px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--purple); background: var(--surface);
+    color: var(--purple); font-size: 13px; cursor: pointer;
+    font-weight: 700; font-family: inherit; transition: all 0.15s;
+  }
+  .reveal-btn:hover { background: var(--purple-light); }
+
+  .prob-reveal { display: none; margin-top: 12px; }
+  .prob-reveal.open { display: block; }
+  .prob-steps { background: var(--surface2); border-radius: 8px; padding: 1rem; font-size: 14px; line-height: 2; }
+  .prob-steps .step { display: flex; align-items: center; gap: 8px; color: var(--text); flex-wrap: wrap; }
+  .prob-steps .step span { font-weight: 700; color: var(--purple-dark); background: var(--purple-light); padding: 1px 8px; border-radius: 4px; }
+  .prob-answer { margin-top: 8px; padding: 10px 14px; background: var(--teal-light); border-radius: 8px; font-size: 15px; font-weight: 700; color: var(--teal-dark); }
+
+  /* ---- WHITEBOARD ---- */
+  .wb-label { font-size: 13px; color: var(--teal-dark); font-weight: 700; margin-bottom: 6px; }
+  .wb-area {
+    width: 100%; border: 2px dashed var(--border2);
+    border-radius: var(--radius); padding: 1rem;
+    font-size: 15px; font-family: inherit;
+    color: var(--text); line-height: 1.7;
+    background: #fafaf8; resize: vertical;
+    transition: border-color 0.15s;
+  }
+  .wb-area:focus { outline: none; border-color: var(--teal); }
+
+  /* ---- WRAP-UP ---- */
+  .estimate-box { background: var(--amber-light); border-radius: var(--radius); padding: 1.25rem; border: 1px solid #FAC775; margin-bottom: 1rem; }
+  .est-q { font-size: 15px; font-weight: 600; color: var(--amber-dark); margin-bottom: 10px; }
+  .est-options { display: flex; flex-direction: column; gap: 8px; }
+  .est-opt {
+    padding: 11px 16px; border-radius: 8px;
+    border: 1.5px solid #FAC775; background: var(--surface);
+    color: var(--text); font-size: 14px; cursor: pointer;
+    text-align: left; font-family: inherit; transition: all 0.15s;
+  }
+  .est-opt:hover { border-color: var(--amber); background: var(--amber-light); }
+  .est-opt.right { background: var(--green-light); border-color: var(--green); color: var(--green-dark); font-weight: 700; }
+  .est-opt.wrong { background: var(--red-light); border-color: #E24B4A; color: var(--red); }
+  .est-reveal { display: none; margin-top: 12px; padding: 14px; background: var(--teal-light); border-radius: 8px; font-size: 14px; color: var(--teal-dark); line-height: 1.8; }
+  .est-reveal.open { display: block; }
+
+  .tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+  @media (max-width: 500px) { .tips-grid { grid-template-columns: 1fr; } }
+  .tip-card { padding: 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); }
+  .tip-icon { font-size: 20px; margin-bottom: 6px; }
+  .tip-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .tip-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  .success-banner { background: var(--teal-light); border: 1px solid #9FE1CB; border-radius: var(--radius); padding: 1.25rem; margin-top: 1rem; }
+  .success-banner h3 { font-size: 16px; color: var(--teal-dark); margin-bottom: 6px; }
+  .success-banner p { font-size: 13px; color: #0F6E56; line-height: 1.7; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 600px) {
+    .wu-q { min-width: 100%; }
+    .header-title { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">P7</div>
+  <div class="header-info">
+    <div class="header-title">Session 1 — Calculating Total Cost of Identical Items</div>
+    <div class="header-sub">Year 5 · Money &amp; Multiplication · 50 minutes</div>
+  </div>
+  <nav class="phase-nav">
+    <button class="phase-btn active" onclick="goPhase(0)">🛒 Warm-up</button>
+    <button class="phase-btn" onclick="goPhase(1)">💡 Introduction</button>
+    <button class="phase-btn" onclick="goPhase(2)">🔍 Deep Dive</button>
+    <button class="phase-btn" onclick="goPhase(3)">✏️ Practice</button>
+    <button class="phase-btn" onclick="goPhase(4)">🔗 Wrap-up</button>
+  </nav>
+</header>
+
+<div class="progress-wrap">
+  <span class="prog-label" id="phase-label">5 min · Warm-up</span>
+  <div class="prog-track"><div class="prog-fill" id="phase-fill" style="width:10%"></div></div>
+  <span class="prog-label">50 min total</span>
+</div>
+
+<main>
+
+  <!-- ===== WARM-UP ===== -->
+  <div class="panel active" id="panel-0">
+    <div class="sec-header">
+      <div class="sec-title">Warm-up: Simple Cost Calculation</div>
+      <div class="sec-sub">Let's think about buying multiple items. Type your answer and click Check.</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge b-purple">Quick Questions</span></div>
+      <div id="warmup-container"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge b-amber">Equal Groups Connection</span></div>
+      <div style="font-size:14px; color:var(--text2); margin-bottom:12px;">Buying 3 apples at $2 each is the same as having 3 equal groups of $2.</div>
+      <div class="groups-visual" id="groups-visual">
+        <div>
+          <div class="group-box"><div class="coin">$2</div></div>
+          <div class="group-label">Group 1</div>
+        </div>
+        <div class="plus-sign">+</div>
+        <div>
+          <div class="group-box"><div class="coin">$2</div></div>
+          <div class="group-label">Group 2</div>
+        </div>
+        <div class="plus-sign">+</div>
+        <div>
+          <div class="group-box"><div class="coin">$2</div></div>
+          <div class="group-label">Group 3</div>
+        </div>
+        <div class="eq-sign">=</div>
+        <div>
+          <div class="total-box">$6</div>
+          <div class="group-label">Total</div>
+        </div>
+      </div>
+      <div style="font-size:14px; color:var(--text2);">3 groups of $2 = 3 × $2 = <strong>$6</strong></div>
+    </div>
+  </div>
+
+  <!-- ===== INTRODUCTION ===== -->
+  <div class="panel" id="panel-1">
+    <div class="sec-header">
+      <div class="sec-title">Introduction: Repeated Purchases with Money</div>
+      <div class="sec-sub">When you buy many identical items, multiplication is faster than repeated addition.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Key ideas</div>
+      <div class="concept-row">
+        <div class="c-icon">✖️</div>
+        <div>
+          <div class="c-label">Multiplication = fast repeated addition</div>
+          <div class="c-desc">Instead of $1.50 + $1.50 + $1.50 + …, write: quantity × price per item = total cost.</div>
+        </div>
+      </div>
+      <div class="concept-row">
+        <div class="c-icon">🍎</div>
+        <div>
+          <div class="c-label">The formula</div>
+          <div class="c-desc" style="font-size:15px; font-weight:600; color:var(--text);">Total Cost = Number of Items × Price per Item</div>
+        </div>
+      </div>
+      <div class="concept-row">
+        <div class="c-icon">💲</div>
+        <div>
+          <div class="c-label">Dollars and cents</div>
+          <div class="c-desc">We can split the price into dollars part and cents part, multiply each separately, then add them together. For example: $4.25 = $4 + $0.25</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Compare: Repeated Addition vs Multiplication</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="padding:12px; background:var(--red-light); border-radius:8px; border:1px solid #F7C1C1;">
+          <div style="font-size:12px; font-weight:700; color:var(--red); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em;">Slow way</div>
+          <div style="font-size:14px; color:var(--text); line-height:2;">$1.50<br>+ $1.50<br>+ $1.50<br>+ $1.50<br>= $6.00</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:6px;">4 additions — easy to make mistakes!</div>
+        </div>
+        <div style="padding:12px; background:var(--green-light); border-radius:8px; border:1px solid #C0DD97;">
+          <div style="font-size:12px; font-weight:700; color:var(--green-dark); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em;">Fast way</div>
+          <div style="font-size:16px; font-weight:700; color:var(--green-dark); line-height:2;">4 × $1.50 = $6.00</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:6px;">One multiplication — quick and reliable!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DEEP DIVE ===== -->
+  <div class="panel" id="panel-2">
+    <div class="sec-header">
+      <div class="sec-title">Deep Dive: Multiplying Money Amounts</div>
+      <div class="sec-sub">Work through each example, then try the interactive builder.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Worked examples</div>
+
+      <div class="example-wrap">
+        <div class="example-header" onclick="toggleEx('ex1')">
+          <span class="ex-title">Example 1 — No regrouping</span>
+          <span class="ex-scenario">3 books at $4.25 each</span>
+          <span id="ex1-arrow" style="color:var(--purple);">▼</span>
+        </div>
+        <div class="example-body" id="ex1">
+          <div class="step-row">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-label">Multiply the dollars</div>
+              <div class="step-math">3 × $4 = $12</div>
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-label">Multiply the cents</div>
+              <div class="step-math">3 × $0.25 = $0.75</div>
+              <div class="step-note">3 × 25¢ = 75¢</div>
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-label">Add together</div>
+              <div class="step-math">$12 + $0.75</div>
+            </div>
+          </div>
+          <div class="answer-banner">✅ Total = $12.75</div>
+        </div>
+      </div>
+
+      <div class="example-wrap">
+        <div class="example-header" onclick="toggleEx('ex2')">
+          <span class="ex-title">Example 2 — Regrouping needed</span>
+          <span class="ex-scenario">4 ice creams at $3.70 each</span>
+          <span id="ex2-arrow" style="color:var(--purple);">▼</span>
+        </div>
+        <div class="example-body" id="ex2">
+          <div class="step-row">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-label">Multiply the dollars</div>
+              <div class="step-math">4 × $3 = $12</div>
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-label">Multiply the cents</div>
+              <div class="step-math">4 × $0.70 = $2.80</div>
+              <div class="step-note">4 × 70¢ = 280¢ = $2.80 — note how this carries over!</div>
+            </div>
+          </div>
+          <div class="step-row">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-label">Add together</div>
+              <div class="step-math">$12 + $2.80</div>
+            </div>
+          </div>
+          <div class="answer-banner">✅ Total = $14.80</div>
+        </div>
+      </div>
+
+      <div class="example-wrap">
+        <div class="example-header" onclick="toggleEx('ex3')">
+          <span class="ex-title">Example 3 — Column method</span>
+          <span class="ex-scenario">3 × $4.25 as column multiplication</span>
+          <span id="ex3-arrow" style="color:var(--purple);">▼</span>
+        </div>
+        <div class="example-body" id="ex3">
+          <div style="display:flex; gap:2rem; flex-wrap:wrap; align-items:flex-start;">
+            <div>
+              <div style="font-size:13px; color:var(--text2); margin-bottom:8px;">Treat as whole numbers first (425 × 3), then place the decimal:</div>
+              <div class="column-method">
+                &nbsp;&nbsp;4 2 5<br>
+                ×&nbsp;&nbsp;&nbsp;3<br>
+                <div class="col-line"></div>
+                1 2 7 5
+              </div>
+              <div style="margin-top:10px; font-size:14px; color:var(--text2);">Then: 1275 → place decimal 2 from right → <strong>$12.75</strong></div>
+            </div>
+            <div style="padding:12px; background:var(--amber-light); border-radius:8px; max-width:260px;">
+              <div style="font-size:12px; font-weight:700; color:var(--amber-dark); margin-bottom:6px;">💡 Remember</div>
+              <div style="font-size:13px; color:var(--amber-dark); line-height:1.6;">$4.25 has 2 decimal places, so the answer always has 2 decimal places too.</div>
+            </div>
+          </div>
+          <div class="answer-banner" style="margin-top:12px;">✅ Total = $12.75</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Builder -->
+    <div class="card" style="border-color:var(--blue); border-width:1.5px;">
+      <div class="card-title"><span class="badge b-blue">🧮 Interactive: Build Your Own Problem</span></div>
+      <div style="font-size:13px; color:var(--text2); margin-bottom:14px;">Enter a quantity and a price, then click Calculate to see the full breakdown.</div>
+      <div class="builder-row">
+        <span class="builder-label">Quantity:</span>
+        <input class="inp inp-sm" type="number" id="bld-qty" value="3" min="1" max="20" />
+        <span class="builder-label">Price per item: $</span>
+        <input class="inp inp-sm" type="text" id="bld-price" value="4.25" placeholder="e.g. 3.75" style="width:90px;" />
+        <button class="btn btn-purple" onclick="buildCalc()">Calculate ↗</button>
+      </div>
+      <div class="breakdown-display" id="bld-display">
+        <div style="color:var(--text3); font-size:14px;">Enter values above and click Calculate.</div>
+      </div>
+    </div>
+
+    <div class="card dashed-card">
+      <div class="wb-label">✏️ Your whiteboard space</div>
+      <textarea class="wb-area" rows="5" placeholder="Show your working here — break into dollars and cents, or use column method..."></textarea>
+    </div>
+  </div>
+
+  <!-- ===== PRACTICE ===== -->
+  <div class="panel" id="panel-3">
+    <div class="sec-header">
+      <div class="sec-title">Practice: Everyday Shopping</div>
+      <div class="sec-sub">Write the multiplication sentence, solve it, then reveal the full working.</div>
+    </div>
+
+    <div id="practice-container"></div>
+
+    <div class="card dashed-card">
+      <div class="wb-label">✏️ Working space</div>
+      <textarea class="wb-area" rows="7" placeholder="Show all your working here — write the multiplication sentence, break into dollars and cents, and find the total..."></textarea>
+    </div>
+  </div>
+
+  <!-- ===== WRAP-UP ===== -->
+  <div class="panel" id="panel-4">
+    <div class="sec-header">
+      <div class="sec-title">Wrap-up: Checking for Reasonableness</div>
+      <div class="sec-sub">Always estimate first — it's a powerful habit to catch mistakes!</div>
+    </div>
+
+    <div class="card">
+      <div class="estimate-box">
+        <div class="est-q">If something costs $5.10 and you buy 4 of them, roughly how much would that be?</div>
+        <div class="est-options">
+          <button class="est-opt" onclick="checkEst(this, false)">About $25 — because $5 × 5 = $25</button>
+          <button class="est-opt" onclick="checkEst(this, true)">About $20 — because $5 × 4 = $20</button>
+          <button class="est-opt" onclick="checkEst(this, false)">About $10 — because $5 ÷ 2 = $2.50… no wait</button>
+        </div>
+        <div class="est-reveal" id="est-reveal">
+          ✅ <strong>Round $5.10 down to $5, then multiply: 4 × $5 = $20.</strong> The real answer is $20.40, which is very close to our estimate. Estimating first means you can spot if you accidentally wrote $204 or $2.04 — you'd immediately know something went wrong!
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Why estimate? Three great reasons:</div>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon">🎯</div>
+          <div class="tip-title">Catch big mistakes</div>
+          <div class="tip-desc">If your estimate is $20 but your answer is $200, something went wrong with the decimal point.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🛒</div>
+          <div class="tip-title">Real-world use</div>
+          <div class="tip-desc">At a shop, you can quickly figure out if you have enough money before getting to the counter.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">⚡</div>
+          <div class="tip-title">Mental maths is fast</div>
+          <div class="tip-desc">Round to the nearest dollar, multiply, and you have an answer in seconds.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">✅</div>
+          <div class="tip-title">Builds confidence</div>
+          <div class="tip-desc">Knowing your answer is "about right" means you can be more confident in your final answer.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Estimation practice</div>
+        <div id="est-practice"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">What I learned today</div>
+        <textarea class="wb-area" rows="7" placeholder="Write 2–3 things you learned about calculating total costs..."></textarea>
+      </div>
+    </div>
+
+    <div class="success-banner">
+      <h3>🎉 Session 1 complete!</h3>
+      <p>You can now calculate the total cost of multiple identical items using multiplication, break a price into dollars and cents, use column multiplication with money, and estimate to check your answers. Excellent work!</p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ===== PHASE NAV ===== */
+const phases = [
+  { label: '5 min · Warm-up', pct: 10 },
+  { label: '15 min · Introduction', pct: 30 },
+  { label: '30 min · Deep Dive', pct: 60 },
+  { label: '45 min · Practice', pct: 90 },
+  { label: '50 min · Wrap-up', pct: 100 },
+];
+function goPhase(i) {
+  document.querySelectorAll('.phase-btn').forEach((b, j) => b.classList.toggle('active', j === i));
+  document.querySelectorAll('.panel').forEach((p, j) => p.classList.toggle('active', j === i));
+  document.getElementById('phase-label').textContent = phases[i].label;
+  document.getElementById('phase-fill').style.width = phases[i].pct + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ===== WARM-UP ===== */
+const warmupQs = [
+  { q: 'If one apple costs $1, how much do 5 apples cost?', a: ['$5', '5', '5.00', '$5.00'] },
+  { q: 'If one pen costs $2, how much do 3 pens cost?', a: ['$6', '6', '6.00', '$6.00'] },
+  { q: 'If one juice costs $3, how much do 4 juices cost?', a: ['$12', '12', '12.00', '$12.00'] },
+  { q: 'If a snack costs $4, what do 6 snacks cost?', a: ['$24', '24', '24.00', '$24.00'] },
+];
+const wc = document.getElementById('warmup-container');
+warmupQs.forEach((item, i) => {
+  const row = document.createElement('div');
+  row.className = 'wu-row';
+  row.innerHTML = `<span class="wu-q">${item.q}</span>
+    <input class="inp inp-sm" id="wu_${i}" type="text" placeholder="$?" />
+    <button class="btn btn-purple" onclick="checkWu(${i}, ${JSON.stringify(item.a)})">Check</button>
+    <span class="feedback" id="wu_fb_${i}"></span>`;
+  wc.appendChild(row);
+});
+function checkWu(i, answers) {
+  const val = document.getElementById('wu_' + i).value.trim().toLowerCase().replace(/\s/g, '');
+  const ok = answers.some(a => val === a.toLowerCase().replace(/\s/g, ''));
+  const fb = document.getElementById('wu_fb_' + i);
+  fb.className = 'feedback ' + (ok ? 'fb-ok' : 'fb-no');
+  fb.textContent = ok ? '✓ Correct! = ' + answers[0] : '✗ Answer: ' + answers[0];
+}
+
+/* ===== EXAMPLE TOGGLE ===== */
+const exStates = { ex1: true, ex2: true, ex3: true };
+function toggleEx(id) {
+  const body = document.getElementById(id);
+  const arrow = document.getElementById(id + '-arrow');
+  exStates[id] = !exStates[id];
+  body.style.display = exStates[id] ? 'block' : 'none';
+  arrow.textContent = exStates[id] ? '▼' : '▶';
+}
+
+/* ===== INTERACTIVE BUILDER ===== */
+function buildCalc() {
+  const qty = parseInt(document.getElementById('bld-qty').value) || 1;
+  const rawPrice = parseFloat(document.getElementById('bld-price').value);
+  if (isNaN(rawPrice) || rawPrice <= 0) {
+    document.getElementById('bld-display').innerHTML = '<div style="color:var(--red); font-size:14px;">Please enter a valid price (e.g. 4.25)</div>';
+    return;
+  }
+  const dollars = Math.floor(rawPrice);
+  const cents = Math.round((rawPrice - dollars) * 100) / 100;
+  const dollarTotal = qty * dollars;
+  const centsTotal = Math.round(qty * cents * 100) / 100;
+  const grandTotal = (qty * rawPrice).toFixed(2);
+
+  let html = '';
+  html += `<div class="bd-step"><span style="font-size:14px; color:var(--text2);">Price breakdown: </span><span style="font-weight:700;">\$${rawPrice.toFixed(2)}</span><span style="color:var(--text3); margin:0 6px;">=</span><span style="font-weight:700;">\$${dollars}</span><span style="color:var(--text3); margin:0 4px;">+</span><span style="font-weight:700;">\$${cents.toFixed(2)}</span></div>`;
+  html += `<div style="height:1px; background:var(--border); margin:10px 0;"></div>`;
+  html += `<div class="bd-step"><span class="bd-op">×</span><span style="font-size:14px;">${qty} × \$${dollars} (dollars)</span><span class="bd-eq">=</span><span class="bd-val">\$${dollarTotal.toFixed(2)}</span></div>`;
+  if (cents > 0) {
+    html += `<div class="bd-step"><span class="bd-op">×</span><span style="font-size:14px;">${qty} × \$${cents.toFixed(2)} (cents)</span><span class="bd-eq">=</span><span class="bd-val">\$${centsTotal.toFixed(2)}</span></div>`;
+    html += `<div class="bd-step"><span class="bd-op">+</span><span style="font-size:14px;">\$${dollarTotal.toFixed(2)} + \$${centsTotal.toFixed(2)}</span></div>`;
+  }
+  html += `<div style="margin-top:10px;"><span class="bd-total">${qty} × \$${rawPrice.toFixed(2)} = \$${grandTotal}</span></div>`;
+  document.getElementById('bld-display').innerHTML = html;
+}
+
+/* ===== PRACTICE PROBLEMS ===== */
+const practiceProblems = [
+  {
+    color: 'b-purple',
+    scenario: '🛍️ You buy 6 packets of chips at $1.80 each. What\'s the total cost?',
+    sentenceAns: ['6 × $1.80', '6 x $1.80', '$1.80 × 6', '$1.80 x 6'],
+    steps: [
+      { label: 'Multiply dollars', math: '6 × $1 = $6.00' },
+      { label: 'Multiply cents', math: '6 × $0.80 = $4.80' },
+      { label: 'Add together', math: '$6.00 + $4.80 = $10.80' },
+    ],
+    answer: '$10.80',
+  },
+  {
+    color: 'b-blue',
+    scenario: '🦒 Tickets to the zoo are $14.50 per person. How much will it cost for 5 people?',
+    sentenceAns: ['5 × $14.50', '5 x $14.50', '$14.50 × 5', '$14.50 x 5'],
+    steps: [
+      { label: 'Multiply dollars', math: '5 × $14 = $70.00' },
+      { label: 'Multiply cents', math: '5 × $0.50 = $2.50' },
+      { label: 'Add together', math: '$70.00 + $2.50 = $72.50' },
+    ],
+    answer: '$72.50',
+  },
+  {
+    color: 'b-amber',
+    scenario: '🥐 A baker sells 8 croissants at $2.25 each. How much money did they make?',
+    sentenceAns: ['8 × $2.25', '8 x $2.25', '$2.25 × 8', '$2.25 x 8'],
+    steps: [
+      { label: 'Multiply dollars', math: '8 × $2 = $16.00' },
+      { label: 'Multiply cents', math: '8 × $0.25 = $2.00' },
+      { label: 'Add together', math: '$16.00 + $2.00 = $18.00' },
+    ],
+    answer: '$18.00',
+  },
+];
+
+const pc = document.getElementById('practice-container');
+practiceProblems.forEach((prob, pi) => {
+  const card = document.createElement('div');
+  card.className = 'card problem-card';
+  const stepsHtml = prob.steps.map(s =>
+    `<div class="step"><strong>${s.label}:</strong> <span>${s.math}</span></div>`
+  ).join('');
+  card.innerHTML = `
+    <div class="card-title"><span class="badge ${prob.color}">Problem ${pi + 1}</span></div>
+    <div class="problem-scenario">${prob.scenario}</div>
+    <div class="prob-row">
+      <span class="prob-label">Multiplication sentence:</span>
+      <input class="inp inp-md" id="prob_sent_${pi}" type="text" placeholder="e.g. 3 × $4.25" />
+      <button class="btn btn-purple" onclick="checkSent(${pi})">Check</button>
+      <span class="feedback" id="prob_fb_${pi}"></span>
+    </div>
+    <div class="prob-row">
+      <span class="prob-label">My answer:</span>
+      <input class="inp inp-sm" id="prob_ans_${pi}" type="text" placeholder="$0.00" />
+    </div>
+    <button class="reveal-btn" onclick="revealProb(${pi})">Show full working ↓</button>
+    <div class="prob-reveal" id="prob_reveal_${pi}">
+      <div class="prob-steps">${stepsHtml}</div>
+      <div class="prob-answer">✅ Total = ${prob.answer}</div>
+    </div>`;
+  pc.appendChild(card);
+});
+
+function checkSent(pi) {
+  const val = document.getElementById('prob_sent_' + pi).value.trim().replace(/\s/g, '').toLowerCase();
+  const ok = practiceProblems[pi].sentenceAns.some(a => val === a.replace(/\s/g, '').toLowerCase());
+  const fb = document.getElementById('prob_fb_' + pi);
+  fb.className = 'feedback ' + (ok ? 'fb-ok' : 'fb-no');
+  fb.textContent = ok ? '✓ Correct sentence!' : '✗ Try: ' + practiceProblems[pi].sentenceAns[0];
+}
+function revealProb(pi) {
+  document.getElementById('prob_reveal_' + pi).classList.add('open');
+}
+
+/* ===== WRAP-UP ESTIMATION ===== */
+function checkEst(el, correct) {
+  document.querySelectorAll('.est-opt').forEach(o => o.className = 'est-opt');
+  el.className = 'est-opt ' + (correct ? 'right' : 'wrong');
+  if (correct) document.getElementById('est-reveal').classList.add('open');
+}
+
+const estPractice = [
+  { q: '3 × $9.95', est: '$30', real: '$29.85', hint: 'Round $9.95 to $10' },
+  { q: '5 × $6.20', est: '$30', real: '$31.00', hint: 'Round $6.20 to $6' },
+  { q: '7 × $4.85', est: '$35', real: '$33.95', hint: 'Round $4.85 to $5' },
+];
+const ep = document.getElementById('est-practice');
+estPractice.forEach((item, i) => {
+  const wrap = document.createElement('div');
+  wrap.style = 'margin-bottom:12px;';
+  wrap.innerHTML = `<div style="font-size:14px; font-weight:600; margin-bottom:5px;">${item.q}</div>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <input class="inp" style="width:90px;" id="ep_${i}" type="text" placeholder="Estimate" />
+      <button class="btn btn-teal" style="font-size:12px;" onclick="checkEP(${i},'${item.est}','${item.real}','${item.hint}')">Check</button>
+      <span class="feedback" id="ep_fb_${i}"></span>
+    </div>`;
+  ep.appendChild(wrap);
+});
+function checkEP(i, est, real, hint) {
+  const val = document.getElementById('ep_' + i).value.trim().replace(/\$/g,'').replace(/\s/g,'');
+  const estNum = parseFloat(est.replace('$',''));
+  const userNum = parseFloat(val);
+  const close = !isNaN(userNum) && Math.abs(userNum - estNum) <= estNum * 0.15;
+  const fb = document.getElementById('ep_fb_' + i);
+  fb.className = 'feedback ' + (close ? 'fb-ok' : 'fb-no');
+  fb.textContent = close ? `✓ Good! Estimate ≈${est}, real = ${real}` : `Hint: ${hint} → ≈${est}`;
+}
+</script>
+</body>
+</html>

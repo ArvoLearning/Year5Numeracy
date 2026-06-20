@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Session 2 — Decimals as Dollars and Cents: The Quarters Connection</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f4f2ee;
+    --surface: #ffffff;
+    --surface2: #eeece6;
+    --border: #dddbd3;
+    --border2: #c5c2b8;
+    --text: #1a1917;
+    --text2: #5a5750;
+    --text3: #9a9790;
+
+    --gold: #BA7517;
+    --gold-light: #FAEEDA;
+    --gold-dark: #633806;
+    --gold-mid: #EF9F27;
+
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-dark: #0F6E56;
+
+    --blue: #378ADD;
+    --blue-light: #E6F1FB;
+    --blue-dark: #185FA5;
+
+    --purple: #534AB7;
+    --purple-light: #EEEDFE;
+    --purple-dark: #3C3489;
+
+    --green: #639922;
+    --green-light: #EAF3DE;
+    --green-dark: #3B6D11;
+
+    --coral: #D85A30;
+    --coral-light: #FAECE7;
+
+    --red-light: #FCEBEB;
+    --red: #A32D2D;
+
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.07), 0 0 0 0.5px rgba(0,0,0,0.06);
+  }
+
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+
+  /* HEADER */
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.9rem 1.5rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 8px rgba(0,0,0,0.07); }
+  .logo { width: 34px; height: 34px; border-radius: 9px; background: var(--gold); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 700; flex-shrink: 0; }
+  .header-info { flex: 1; min-width: 140px; }
+  .header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .header-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .phase-nav { display: flex; gap: 5px; flex-wrap: wrap; }
+  .phase-btn { padding: 6px 13px; border-radius: 20px; border: 1.5px solid var(--border2); background: var(--surface); color: var(--text2); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+  .phase-btn.active { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .phase-btn:hover:not(.active) { background: var(--surface2); }
+
+  /* PROGRESS */
+  .progress-wrap { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.45rem 1.5rem; display: flex; align-items: center; gap: 12px; }
+  .prog-label { font-size: 12px; color: var(--text3); white-space: nowrap; }
+  .prog-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* LAYOUT */
+  main { max-width: 840px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .sec-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .sec-sub { font-size: 14px; color: var(--text2); margin-bottom: 1.25rem; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 0.9rem; display: flex; align-items: center; gap: 8px; }
+  .dashed-card { border: 2px dashed var(--teal); }
+  .dashed-card .card-title { color: var(--teal-dark); }
+
+  /* BADGES */
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; }
+  .b-gold { background: var(--gold-light); color: var(--gold-dark); }
+  .b-teal { background: var(--teal-light); color: var(--teal-dark); }
+  .b-blue { background: var(--blue-light); color: var(--blue-dark); }
+  .b-purple { background: var(--purple-light); color: var(--purple-dark); }
+  .b-green { background: var(--green-light); color: var(--green-dark); }
+  .b-coral { background: var(--coral-light); color: var(--coral); }
+
+  /* INPUTS & BUTTONS */
+  .inp { border: 1.5px solid var(--border2); border-radius: var(--radius-sm); padding: 7px 11px; font-size: 15px; background: var(--surface); color: var(--text); font-family: inherit; transition: border-color 0.15s; }
+  .inp:focus { outline: none; border-color: var(--gold); }
+  .inp-sm { width: 90px; text-align: center; }
+  .btn { padding: 7px 16px; border-radius: var(--radius-sm); border: none; font-size: 13px; cursor: pointer; font-weight: 700; font-family: inherit; transition: all 0.15s; }
+  .btn-gold { background: var(--gold); color: #fff; }
+  .btn-gold:hover { background: var(--gold-dark); }
+  .btn-teal { background: var(--teal); color: #fff; }
+  .btn-teal:hover { background: var(--teal-dark); }
+  .btn-outline-gold { background: var(--surface); color: var(--gold); border: 1.5px solid var(--gold); }
+  .btn-outline-gold:hover { background: var(--gold-light); }
+  .feedback { font-size: 13px; padding: 5px 11px; border-radius: 4px; font-weight: 700; display: none; }
+  .fb-ok { background: var(--green-light); color: var(--green-dark); display: inline-block; }
+  .fb-no { background: var(--red-light); color: var(--red); display: inline-block; }
+
+  /* PLACE VALUE */
+  .pv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .pv-col { text-align: center; }
+  .pv-digit { font-size: 42px; font-weight: 800; border-radius: 8px; padding: 8px 0; margin-bottom: 6px; line-height: 1; }
+  .pv-label { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+  .pv-sub { font-size: 11px; color: var(--text3); }
+  .pv-dollars { background: var(--gold-light); color: var(--gold-dark); }
+  .pv-tenths { background: var(--blue-light); color: var(--blue-dark); }
+  .pv-hundredths { background: var(--purple-light); color: var(--purple-dark); }
+  .pv-dot { font-size: 42px; font-weight: 800; color: var(--text3); display: flex; align-items: center; justify-content: center; padding-bottom: 20px; }
+
+  .wu-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .wu-q { font-size: 15px; min-width: 260px; flex: 1; }
+
+  /* CENTS TABLE */
+  .cents-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .cents-table th { background: var(--gold-light); color: var(--gold-dark); padding: 8px 12px; border: 1px solid #FAC775; font-weight: 700; text-align: center; }
+  .cents-table td { padding: 7px 12px; border: 1px solid var(--border); text-align: center; }
+  .cents-table tr:nth-child(even) td { background: var(--surface2); }
+  .cents-table td.hi { background: var(--teal-light); color: var(--teal-dark); font-weight: 700; }
+  .cents-table td.special { background: var(--gold-light); color: var(--gold-dark); font-weight: 700; }
+
+  /* DOLLAR CIRCLE VISUAL */
+  .dollar-viz-wrap { display: flex; justify-content: center; align-items: flex-start; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+  .dollar-svg-wrap { text-align: center; }
+  .quarter-info { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .q-row { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); font-size: 14px; }
+  .q-swatch { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+  .q-label { font-weight: 700; color: var(--text); }
+  .q-decimal { font-size: 13px; color: var(--text2); }
+  .q-frac { font-size: 13px; color: var(--purple); font-weight: 700; background: var(--purple-light); padding: 1px 7px; border-radius: 4px; }
+
+  /* COIN BUILDER */
+  .coin-tray { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+  .coin-btn { width: 52px; height: 52px; border-radius: 50%; border: 3px solid; cursor: pointer; font-size: 12px; font-weight: 800; transition: transform 0.1s, box-shadow 0.1s; display: flex; align-items: center; justify-content: center; flex-direction: column; line-height: 1.2; font-family: inherit; }
+  .coin-btn:hover { transform: scale(1.08); }
+  .coin-btn:active { transform: scale(0.95); }
+  .coin-25 { background: radial-gradient(circle at 35% 35%, #f5d87a, #c9960f); border-color: #8a6500; color: #4a3500; box-shadow: 0 3px 6px rgba(180,120,0,0.3); }
+  .coin-50 { background: radial-gradient(circle at 35% 35%, #e8e8e8, #aaa); border-color: #777; color: #333; box-shadow: 0 3px 6px rgba(0,0,0,0.2); }
+  .coin-100 { background: radial-gradient(circle at 35% 35%, #f0d060, #b89020); border-color: #7a600a; color: #3a2a00; box-shadow: 0 3px 6px rgba(160,110,0,0.3); }
+  .coin-label-add { font-size: 10px; margin-top: 1px; }
+  .coin-remove { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--red); background: var(--red-light); color: var(--red); cursor: pointer; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; font-family: inherit; transition: all 0.1s; }
+  .coin-remove:hover { background: var(--red); color: #fff; }
+  .added-coins { display: flex; gap: 6px; flex-wrap: wrap; min-height: 44px; padding: 8px; border: 1.5px dashed var(--border2); border-radius: 8px; align-items: center; margin-bottom: 10px; background: var(--surface2); }
+  .added-coin { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; border: 2px solid; cursor: pointer; transition: transform 0.1s; }
+  .added-coin:hover { transform: scale(1.1); }
+  .added-coin-25 { background: radial-gradient(circle at 35% 35%, #f5d87a, #c9960f); border-color: #8a6500; color: #4a3500; }
+  .added-coin-50 { background: radial-gradient(circle at 35% 35%, #e8e8e8, #aaa); border-color: #777; color: #333; }
+  .added-coin-100 { background: radial-gradient(circle at 35% 35%, #f0d060, #b89020); border-color: #7a600a; color: #3a2a00; }
+  .coin-total-display { font-size: 22px; font-weight: 800; color: var(--gold-dark); background: var(--gold-light); padding: 10px 20px; border-radius: 10px; border: 2px solid var(--gold-mid); display: inline-block; }
+  .coin-hint { font-size: 13px; color: var(--text2); margin-top: 6px; }
+
+  /* QUARTER QUIZ */
+  .qq-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; padding: 10px; background: var(--surface2); border-radius: 8px; }
+  .qq-q { font-size: 15px; flex: 1; min-width: 200px; }
+
+  /* PRACTICE */
+  .prob-card { border-left: 4px solid var(--gold); }
+  .prob-scenario { font-size: 15px; color: var(--text); margin-bottom: 14px; padding: 10px 14px; background: var(--gold-light); border-radius: 8px; border: 1px solid #FAC775; }
+  .prob-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .prob-label { font-size: 13px; color: var(--text2); min-width: 120px; }
+  .reveal-btn { padding: 7px 16px; border-radius: var(--radius-sm); border: 1.5px solid var(--gold); background: var(--surface); color: var(--gold-dark); font-size: 13px; cursor: pointer; font-weight: 700; font-family: inherit; transition: all 0.15s; }
+  .reveal-btn:hover { background: var(--gold-light); }
+  .prob-reveal { display: none; margin-top: 12px; }
+  .prob-reveal.open { display: block; }
+  .prob-steps { background: var(--surface2); border-radius: 8px; padding: 1rem; font-size: 14px; line-height: 2.2; }
+  .ps { display: flex; align-items: flex-start; gap: 8px; color: var(--text); flex-wrap: wrap; }
+  .ps span { font-weight: 700; color: var(--gold-dark); background: var(--gold-light); padding: 1px 8px; border-radius: 4px; }
+  .prob-answer { margin-top: 8px; padding: 10px 14px; background: var(--teal-light); border-radius: 8px; font-size: 15px; font-weight: 700; color: var(--teal-dark); }
+
+  /* WHITEBOARD */
+  .wb-label { font-size: 13px; color: var(--teal-dark); font-weight: 700; margin-bottom: 6px; }
+  .wb-area { width: 100%; border: 2px dashed var(--border2); border-radius: var(--radius); padding: 1rem; font-size: 15px; font-family: inherit; color: var(--text); line-height: 1.7; background: #fafaf8; resize: vertical; transition: border-color 0.15s; }
+  .wb-area:focus { outline: none; border-color: var(--teal); }
+
+  /* WRAP-UP */
+  .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+  @media (max-width: 500px) { .why-grid { grid-template-columns: 1fr; } }
+  .why-card { padding: 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); }
+  .why-icon { font-size: 22px; margin-bottom: 6px; }
+  .why-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .why-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .mc-opt { width: 100%; padding: 11px 16px; border-radius: 8px; border: 1.5px solid var(--border2); background: var(--surface); color: var(--text); font-size: 14px; cursor: pointer; text-align: left; font-family: inherit; transition: all 0.15s; margin-bottom: 8px; }
+  .mc-opt:hover { border-color: var(--gold); background: var(--gold-light); }
+  .mc-opt.right { background: var(--green-light); border-color: var(--green); color: var(--green-dark); font-weight: 700; }
+  .mc-opt.wrong { background: var(--red-light); border-color: #E24B4A; color: var(--red); }
+  .mc-reveal { display: none; margin-top: 10px; padding: 14px; background: var(--teal-light); border-radius: 8px; font-size: 14px; color: var(--teal-dark); line-height: 1.8; }
+  .mc-reveal.open { display: block; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+  .success-banner { background: var(--teal-light); border: 1px solid #9FE1CB; border-radius: var(--radius); padding: 1.25rem; margin-top: 1rem; }
+  .success-banner h3 { font-size: 16px; color: var(--teal-dark); margin-bottom: 6px; }
+  .success-banner p { font-size: 13px; color: #0F6E56; line-height: 1.7; }
+
+  .concept-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--surface2); border-radius: 8px; margin-bottom: 8px; }
+  .c-icon { font-size: 24px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+  .c-label { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .c-desc { font-size: 13px; color: var(--text2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">¼</div>
+  <div class="header-info">
+    <div class="header-title">Session 2 — Decimals as Dollars and Cents: The Quarters Connection</div>
+    <div class="header-sub">Year 5 · Money &amp; Decimals · 50 minutes</div>
+  </div>
+  <nav class="phase-nav">
+    <button class="phase-btn active" onclick="goPhase(0)">🔢 Warm-up</button>
+    <button class="phase-btn" onclick="goPhase(1)">💡 Introduction</button>
+    <button class="phase-btn" onclick="goPhase(2)">🔍 Deep Dive</button>
+    <button class="phase-btn" onclick="goPhase(3)">✏️ Practice</button>
+    <button class="phase-btn" onclick="goPhase(4)">🔗 Wrap-up</button>
+  </nav>
+</header>
+
+<div class="progress-wrap">
+  <span class="prog-label" id="phase-label">5 min · Warm-up</span>
+  <div class="prog-track"><div class="prog-fill" id="phase-fill" style="width:10%"></div></div>
+  <span class="prog-label">50 min total</span>
+</div>
+
+<main>
+
+  <!-- ===== WARM-UP ===== -->
+  <div class="panel active" id="panel-0">
+    <div class="sec-title">Warm-up: Decimal Place Value Recap</div>
+    <div class="sec-sub">What does each digit in a money amount actually mean?</div>
+
+    <div class="card">
+      <div class="card-title"><span class="badge b-gold">Place Value in $3.75</span></div>
+      <div style="display:flex; align-items:center; gap:6px; justify-content:center; margin-bottom:16px;">
+        <div class="pv-col">
+          <div class="pv-digit pv-dollars">3</div>
+          <div class="pv-label" style="color:var(--gold-dark);">Dollars</div>
+          <div class="pv-sub">whole dollars</div>
+        </div>
+        <div class="pv-dot">.</div>
+        <div class="pv-col">
+          <div class="pv-digit pv-tenths">7</div>
+          <div class="pv-label" style="color:var(--blue-dark);">Tenths</div>
+          <div class="pv-sub">= 70 cents</div>
+        </div>
+        <div class="pv-col">
+          <div class="pv-digit pv-hundredths">5</div>
+          <div class="pv-label" style="color:var(--purple-dark);">Hundredths</div>
+          <div class="pv-sub">= 5 cents</div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; font-size:13px; text-align:center;">
+        <div style="padding:8px; background:var(--gold-light); border-radius:8px; color:var(--gold-dark);"><strong>3</strong> = 3 whole dollars<br>= $3.00</div>
+        <div style="padding:8px; background:var(--blue-light); border-radius:8px; color:var(--blue-dark);"><strong>7</strong> = 7 tenths of $1<br>= 70 cents</div>
+        <div style="padding:8px; background:var(--purple-light); border-radius:8px; color:var(--purple-dark);"><strong>5</strong> = 5 hundredths of $1<br>= 5 cents</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="badge b-blue">Place Value Questions</span></div>
+      <div id="warmup-pv"></div>
+    </div>
+  </div>
+
+  <!-- ===== INTRODUCTION ===== -->
+  <div class="panel" id="panel-1">
+    <div class="sec-title">Introduction: Cents Are Hundredths of a Dollar</div>
+    <div class="sec-sub">Understanding the 100-to-1 relationship between cents and dollars.</div>
+
+    <div class="card">
+      <div class="card-title">The key relationship</div>
+      <div class="concept-row">
+        <div class="c-icon">💯</div>
+        <div>
+          <div class="c-label">$1 = 100 cents</div>
+          <div class="c-desc">One dollar is exactly one hundred cents. So each cent is <strong>one hundredth</strong> of a dollar — that's where the second decimal place comes from!</div>
+        </div>
+      </div>
+      <div class="concept-row">
+        <div class="c-icon">🔗</div>
+        <div>
+          <div class="c-label">Cents → Decimals: divide by 100</div>
+          <div class="c-desc">To convert cents to dollars, divide by 100. To convert dollars to cents, multiply by 100.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Cents to dollars conversion table</div>
+      <div style="overflow-x:auto;">
+        <table class="cents-table">
+          <thead><tr><th>Cents</th><th>÷ 100</th><th>Dollars</th><th>Fraction of $1</th></tr></thead>
+          <tbody>
+            <tr><td>1¢</td><td>1 ÷ 100</td><td>$0.01</td><td>1/100</td></tr>
+            <tr><td>10¢</td><td>10 ÷ 100</td><td>$0.10</td><td>1/10</td></tr>
+            <tr><td>20¢</td><td>20 ÷ 100</td><td>$0.20</td><td>1/5</td></tr>
+            <tr><td class="special">25¢</td><td class="special">25 ÷ 100</td><td class="special">$0.25</td><td class="special">1/4 ⭐</td></tr>
+            <tr><td>50¢</td><td>50 ÷ 100</td><td>$0.50</td><td>1/2</td></tr>
+            <tr><td class="special">75¢</td><td class="special">75 ÷ 100</td><td class="special">$0.75</td><td class="special">3/4 ⭐</td></tr>
+            <tr><td class="hi">100¢</td><td class="hi">100 ÷ 100</td><td class="hi">$1.00</td><td class="hi">1 whole</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px; padding:10px 14px; background:var(--gold-light); border-radius:8px; font-size:13px; color:var(--gold-dark);">
+        ⭐ <strong>Quarters are special!</strong> 25¢ = $0.25 = ¼ of a dollar. Four quarters make exactly one dollar.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Why is $0.25 = ¼?</div>
+      <div style="font-size:14px; color:var(--text2); line-height:2; background:var(--surface2); padding:12px; border-radius:8px;">
+        25 cents out of 100 cents = <strong>25/100</strong><br>
+        Simplify by dividing top and bottom by 25: &nbsp;<strong>25 ÷ 25 = 1</strong> &nbsp; and &nbsp; <strong>100 ÷ 25 = 4</strong><br>
+        So &nbsp; <strong style="color:var(--gold-dark); font-size:16px;">25/100 = 1/4</strong> &nbsp; ✓
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DEEP DIVE ===== -->
+  <div class="panel" id="panel-2">
+    <div class="sec-title">Deep Dive: Visualising Quarters and Decimals</div>
+    <div class="sec-sub">See how the dollar divides into quarters, then test your understanding.</div>
+
+    <div class="card">
+      <div class="card-title"><span class="badge b-gold">Dollar Divided into Quarters</span></div>
+      <div class="dollar-viz-wrap">
+        <div class="dollar-svg-wrap">
+          <svg id="dollar-svg" width="200" height="200" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="92" fill="#e8e0c8" stroke="#a07820" stroke-width="6"/>
+            <circle cx="100" cy="100" r="92" fill="none" stroke="#c09030" stroke-width="2" stroke-dasharray="8,4" opacity="0.5"/>
+            <!-- Q1 top-right -->
+            <path id="q1" d="M100,100 L100,8 A92,92 0 0,1 192,100 Z" fill="#EF9F27" stroke="#fff" stroke-width="3" style="cursor:pointer;" onclick="highlightQ(1)" />
+            <!-- Q2 bottom-right -->
+            <path id="q2" d="M100,100 L192,100 A92,92 0 0,1 100,192 Z" fill="#BA7517" stroke="#fff" stroke-width="3" style="cursor:pointer;" onclick="highlightQ(2)" />
+            <!-- Q3 bottom-left -->
+            <path id="q3" d="M100,100 L100,192 A92,92 0 0,1 8,100 Z" fill="#EF9F27" stroke="#fff" stroke-width="3" style="cursor:pointer;" onclick="highlightQ(3)" />
+            <!-- Q4 top-left -->
+            <path id="q4" d="M100,100 L8,100 A92,92 0 0,1 100,8 Z" fill="#BA7517" stroke="#fff" stroke-width="3" style="cursor:pointer;" onclick="highlightQ(4)" />
+            <text x="138" y="60" font-size="13" font-weight="800" fill="#4a2800" text-anchor="middle">$0.25</text>
+            <text x="155" y="148" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">$0.25</text>
+            <text x="60" y="155" font-size="13" font-weight="800" fill="#4a2800" text-anchor="middle">$0.25</text>
+            <text x="48" y="62" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">$0.25</text>
+            <circle cx="100" cy="100" r="22" fill="#f5e090" stroke="#a07820" stroke-width="3"/>
+            <text x="100" y="96" font-size="11" font-weight="800" fill="#4a2800" text-anchor="middle">$1.00</text>
+            <text x="100" y="108" font-size="10" fill="#7a5000" text-anchor="middle">= 4 × $0.25</text>
+          </svg>
+          <div style="font-size:12px; color:var(--text3); margin-top:4px;">Click a quarter to highlight it</div>
+        </div>
+        <div class="quarter-info" id="quarter-info">
+          <div class="q-row"><div class="q-swatch" style="background:#EF9F27; border:2px solid #8a6500;"></div><span class="q-label">1 quarter</span><span class="q-decimal">= $0.25</span><span class="q-frac">= 1/4</span></div>
+          <div class="q-row"><div class="q-swatch" style="background:linear-gradient(90deg,#EF9F27 50%,#BA7517 50%); border:2px solid #8a6500;"></div><span class="q-label">2 quarters</span><span class="q-decimal">= $0.50</span><span class="q-frac">= 1/2</span></div>
+          <div class="q-row"><div class="q-swatch" style="background:linear-gradient(120deg,#EF9F27 33%,#BA7517 33%,#BA7517 66%,#EF9F27 66%); border:2px solid #8a6500;"></div><span class="q-label">3 quarters</span><span class="q-decimal">= $0.75</span><span class="q-frac">= 3/4</span></div>
+          <div class="q-row"><div class="q-swatch" style="background:var(--gold); border:2px solid #8a6500;"></div><span class="q-label">4 quarters</span><span class="q-decimal">= $1.00</span><span class="q-frac">= 1 whole</span></div>
+        </div>
+      </div>
+      <div id="q-msg" style="text-align:center; font-size:14px; font-weight:700; color:var(--gold-dark); min-height:24px; margin-top:4px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="badge b-blue">Quarter Quiz</span></div>
+      <div id="quarter-quiz"></div>
+    </div>
+
+    <div class="card" style="border-color:var(--gold); border-width:1.5px;">
+      <div class="card-title"><span class="badge b-gold">🪙 Interactive Coin Builder</span></div>
+      <div style="font-size:13px; color:var(--text2); margin-bottom:12px;">Click coins to add them. Click an added coin to remove it. Watch the total update!</div>
+      <div class="coin-tray">
+        <button class="coin-btn coin-25" onclick="addCoin(25)">25¢<div class="coin-label-add">+add</div></button>
+        <button class="coin-btn coin-50" onclick="addCoin(50)">50¢<div class="coin-label-add">+add</div></button>
+        <button class="coin-btn coin-100" onclick="addCoin(100)">$1<div class="coin-label-add">+add</div></button>
+        <button class="coin-remove" onclick="clearCoins()" title="Clear all">✕</button>
+      </div>
+      <div class="added-coins" id="added-coins"><span style="color:var(--text3); font-size:13px;">No coins added yet — click above to add!</span></div>
+      <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+        <div class="coin-total-display" id="coin-total">$0.00</div>
+        <div id="coin-breakdown" class="coin-hint"></div>
+      </div>
+    </div>
+
+    <div class="card dashed-card">
+      <div class="wb-label">✏️ Your whiteboard space</div>
+      <textarea class="wb-area" rows="4" placeholder="Draw your own dollar coin, shade quarters, write the fractions and decimals..."></textarea>
+    </div>
+  </div>
+
+  <!-- ===== PRACTICE ===== -->
+  <div class="panel" id="panel-3">
+    <div class="sec-title">Practice: Mixing Money and Fractions</div>
+    <div class="sec-sub">Use what you know about $0.25 = ¼ to solve these problems.</div>
+    <div id="practice-container"></div>
+    <div class="card dashed-card">
+      <div class="wb-label">✏️ Working space</div>
+      <textarea class="wb-area" rows="6" placeholder="Show all your working here — convert between cents and dollars, think in quarters..."></textarea>
+    </div>
+  </div>
+
+  <!-- ===== WRAP-UP ===== -->
+  <div class="panel" id="panel-4">
+    <div class="sec-title">Wrap-up: Why Quarters are Special</div>
+    <div class="sec-sub">Let's connect everything we've learned today.</div>
+
+    <div class="card">
+      <div style="font-size:15px; font-weight:600; color:var(--text); margin-bottom:12px;">Why do we pay special attention to 25 cents as ¼ of a dollar?</div>
+      <button class="mc-opt" onclick="checkMC(this, true)">All of the below — it's a common coin, connects fractions to money, and helps with mental maths</button>
+      <button class="mc-opt" onclick="checkMC(this, false)">Because 25 is a lucky number</button>
+      <button class="mc-opt" onclick="checkMC(this, false)">Only because it's worth more than 10 cents</button>
+      <div class="mc-reveal" id="mc-reveal">
+        ✅ <strong>Exactly!</strong> The quarter is special for three reasons:<br><br>
+        <strong>1. It's a common, real coin</strong> — we use 25¢ coins every day, so understanding them matters.<br>
+        <strong>2. Fractions connection</strong> — $0.25 = 25/100 = 1/4 links decimal money notation directly to fractions.<br>
+        <strong>3. Mental maths</strong> — knowing 4 × $0.25 = $1 makes calculating with money much faster!
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Why quarters matter — 4 big reasons</div>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="why-icon">🪙</div>
+          <div class="why-title">Real-world coin</div>
+          <div class="why-desc">25¢ is a coin we use every day. Understanding it helps with everyday money situations.</div>
+        </div>
+        <div class="why-card">
+          <div class="why-icon">½</div>
+          <div class="why-title">Fraction bridge</div>
+          <div class="why-desc">$0.25 = 1/4 links decimal notation to fractions. Same number, two different ways to write it.</div>
+        </div>
+        <div class="why-card">
+          <div class="why-icon">⚡</div>
+          <div class="why-title">Mental maths shortcut</div>
+          <div class="why-desc">4 quarters = $1, 8 quarters = $2, 20 quarters = $5. Quick multiplication becomes easy!</div>
+        </div>
+        <div class="why-card">
+          <div class="why-icon">📐</div>
+          <div class="why-title">Connects place value</div>
+          <div class="why-desc">The hundredths column in decimals is the cents column — quarters sit neatly at 25 hundredths.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Quick-fire recap</div>
+        <div id="recap-qs"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">What I learned today</div>
+        <textarea class="wb-area" rows="7" placeholder="Write 2–3 things you learned about decimals, cents, and quarters..."></textarea>
+      </div>
+    </div>
+
+    <div class="success-banner">
+      <h3>🎉 Session 2 complete!</h3>
+      <p>You can now explain that cents are hundredths of a dollar, convert between cents and decimal dollars, show that $0.25 = ¼ of a dollar, and use quarters to reason about fractions and decimals. Outstanding work!</p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ===== PHASE NAV ===== */
+const phases = [
+  { label: '5 min · Warm-up', pct: 10 },
+  { label: '15 min · Introduction', pct: 30 },
+  { label: '30 min · Deep Dive', pct: 60 },
+  { label: '45 min · Practice', pct: 90 },
+  { label: '50 min · Wrap-up', pct: 100 },
+];
+function goPhase(i) {
+  document.querySelectorAll('.phase-btn').forEach((b, j) => b.classList.toggle('active', j === i));
+  document.querySelectorAll('.panel').forEach((p, j) => p.classList.toggle('active', j === i));
+  document.getElementById('phase-label').textContent = phases[i].label;
+  document.getElementById('phase-fill').style.width = phases[i].pct + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ===== WARM-UP ===== */
+const pvQs = [
+  { q: 'In $5.30, what does the <strong>5</strong> represent?', a: ['5 dollars', 'dollars', '$5', '5 whole dollars', '5dollar'], display: '5 whole dollars ($5.00)' },
+  { q: 'In $5.30, what does the <strong>3</strong> represent?', a: ['3 tenths', '30 cents', '3tenths', '$0.30', '0.30'], display: '3 tenths of a dollar (30 cents)' },
+  { q: 'In $5.30, what does the <strong>0</strong> in the hundredths place represent?', a: ['0 cents', '0 hundredths', '0', 'zero cents', 'nothing', 'zero'], display: '0 hundredths (0 cents)' },
+  { q: 'In $2.08, the 8 is in which place?', a: ['hundredths', 'hundredth', 'cents', '8 cents'], display: 'hundredths (= 8 cents)' },
+];
+const pvC = document.getElementById('warmup-pv');
+pvQs.forEach((item, i) => {
+  const row = document.createElement('div');
+  row.className = 'wu-row';
+  row.innerHTML = `<span class="wu-q">${item.q}</span>
+    <input class="inp" style="width:180px;" id="pv_${i}" type="text" placeholder="Your answer..." />
+    <button class="btn btn-gold" onclick="checkPV(${i})">Check</button>
+    <span class="feedback" id="pv_fb_${i}"></span>`;
+  pvC.appendChild(row);
+});
+function checkPV(i) {
+  const val = document.getElementById('pv_' + i).value.trim().toLowerCase().replace(/\s+/g, ' ');
+  const ok = pvQs[i].a.some(a => val.includes(a.toLowerCase().replace(/\s+/g,'')));
+  const fb = document.getElementById('pv_fb_' + i);
+  fb.className = 'feedback ' + (ok ? 'fb-ok' : 'fb-no');
+  fb.textContent = ok ? '✓ Correct! → ' + pvQs[i].display : '✗ Answer: ' + pvQs[i].display;
+}
+
+/* ===== DOLLAR CIRCLE ===== */
+const qMsgs = {
+  1: 'Quarter 1 = $0.25 = ¼ of a dollar',
+  2: 'Quarter 2 = $0.25. Two quarters = $0.50 = ½ of a dollar',
+  3: 'Quarter 3 = $0.25. Three quarters = $0.75 = ¾ of a dollar',
+  4: 'Quarter 4 = $0.25. Four quarters = $1.00 = 1 whole dollar!',
+};
+let lastQ = null;
+function highlightQ(n) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('q' + i);
+    el.style.opacity = i <= n ? '1' : '0.35';
+    el.style.filter = i <= n ? 'brightness(1.1)' : 'brightness(0.8)';
+  }
+  document.getElementById('q-msg').textContent = qMsgs[n];
+  lastQ = n;
+}
+
+/* ===== QUARTER QUIZ ===== */
+const qqData = [
+  { q: '75 cents = $?', a: ['$0.75', '0.75'], display: '$0.75' },
+  { q: '1 quarter = $?', a: ['$0.25', '0.25'], display: '$0.25' },
+  { q: '3 quarters = $?', a: ['$0.75', '0.75'], display: '$0.75' },
+  { q: 'How many $0.25 coins make $2?', a: ['8'], display: '8 coins (8 × $0.25 = $2.00)' },
+  { q: '$0.50 = how many quarters?', a: ['2'], display: '2 quarters' },
+  { q: '$0.75 as a fraction of $1 = ?', a: ['3/4', '¾', '3 quarters', '3/4 of a dollar'], display: '3/4 (three quarters)' },
+];
+const qqC = document.getElementById('quarter-quiz');
+qqData.forEach((item, i) => {
+  const row = document.createElement('div');
+  row.className = 'qq-row';
+  row.innerHTML = `<span class="qq-q">${item.q}</span>
+    <input class="inp inp-sm" id="qq_${i}" type="text" placeholder="?" />
+    <button class="btn btn-gold" onclick="checkQQ(${i})">Check</button>
+    <span class="feedback" id="qq_fb_${i}"></span>`;
+  qqC.appendChild(row);
+});
+function checkQQ(i) {
+  const val = document.getElementById('qq_' + i).value.trim().toLowerCase().replace(/\s/g, '');
+  const ok = qqData[i].a.some(a => val === a.toLowerCase().replace(/\s/g, ''));
+  const fb = document.getElementById('qq_fb_' + i);
+  fb.className = 'feedback ' + (ok ? 'fb-ok' : 'fb-no');
+  fb.textContent = ok ? '✓ Correct! = ' + qqData[i].display : '✗ Answer: ' + qqData[i].display;
+}
+
+/* ===== COIN BUILDER ===== */
+let coins = [];
+function addCoin(val) {
+  if (coins.length >= 24) return;
+  coins.push(val);
+  renderCoins();
+}
+function removeCoin(idx) {
+  coins.splice(idx, 1);
+  renderCoins();
+}
+function clearCoins() { coins = []; renderCoins(); }
+function renderCoins() {
+  const tray = document.getElementById('added-coins');
+  if (coins.length === 0) {
+    tray.innerHTML = '<span style="color:var(--text3); font-size:13px;">No coins added yet — click above to add!</span>';
+  } else {
+    tray.innerHTML = coins.map((c, i) =>
+      `<div class="added-coin added-coin-${c}" onclick="removeCoin(${i})" title="Click to remove">${c < 100 ? c+'¢' : '$1'}</div>`
+    ).join('');
+  }
+  const total = coins.reduce((s, c) => s + c, 0);
+  const dollars = (total / 100).toFixed(2);
+  document.getElementById('coin-total').textContent = '$' + dollars;
+  const n25 = coins.filter(c => c === 25).length;
+  const n50 = coins.filter(c => c === 50).length;
+  const n100 = coins.filter(c => c === 100).length;
+  const parts = [];
+  if (n25) parts.push(n25 + ' × 25¢');
+  if (n50) parts.push(n50 + ' × 50¢');
+  if (n100) parts.push(n100 + ' × $1');
+  document.getElementById('coin-breakdown').textContent = parts.length ? parts.join(' + ') : '';
+}
+
+/* ===== PRACTICE ===== */
+const practiceProbs = [
+  {
+    label: 'Problem 1', color: 'b-gold',
+    scenario: '🪙 You have $2.50. How many 25-cent coins is that equivalent to?',
+    ans: ['10', '10 coins', '10 quarters'],
+    steps: [
+      '$2.50 = 250 cents',
+      '250 ÷ 25 = 10',
+    ],
+    answer: '10 twenty-five cent coins',
+    hint: 'Convert to cents first, then divide by 25',
+  },
+  {
+    label: 'Problem 2', color: 'b-purple',
+    scenario: '💰 How much money is ¼ of a dollar?',
+    ans: ['$0.25', '0.25', '25 cents', '25c', '25¢'],
+    steps: [
+      '1 dollar = $1.00 = 100 cents',
+      '¼ of $1.00 = $1.00 ÷ 4 = $0.25',
+    ],
+    answer: '$0.25 (25 cents)',
+    hint: 'Divide $1.00 into 4 equal parts',
+  },
+  {
+    label: 'Problem 3', color: 'b-teal',
+    scenario: '💼 You have four $0.25 coins, three $0.50 coins, and two $1 coins. How much money do you have in total?',
+    ans: ['$4.50', '4.50', '$4.50 total'],
+    steps: [
+      '4 × $0.25 = $1.00',
+      '3 × $0.50 = $1.50',
+      '2 × $1.00 = $2.00',
+      '$1.00 + $1.50 + $2.00 = $4.50',
+    ],
+    answer: '$4.50',
+    hint: 'Calculate each group separately, then add',
+  },
+];
+
+const pc = document.getElementById('practice-container');
+practiceProbs.forEach((prob, pi) => {
+  const card = document.createElement('div');
+  card.className = 'card prob-card';
+  const stepsHtml = prob.steps.map(s => `<div class="ps">→ <span>${s}</span></div>`).join('');
+  card.innerHTML = `
+    <div class="card-title"><span class="badge ${prob.color}">${prob.label}</span> <span style="font-size:12px;color:var(--text3);">Hint: ${prob.hint}</span></div>
+    <div class="prob-scenario">${prob.scenario}</div>
+    <div class="prob-row">
+      <span class="prob-label">My answer:</span>
+      <input class="inp" style="width:150px;" id="pa_${pi}" type="text" placeholder="Answer..." />
+      <button class="btn btn-gold" onclick="checkPA(${pi})">Check</button>
+      <span class="feedback" id="pa_fb_${pi}"></span>
+    </div>
+    <button class="reveal-btn" onclick="document.getElementById('pr_${pi}').classList.add('open')">Show working ↓</button>
+    <div class="prob-reveal" id="pr_${pi}">
+      <div class="prob-steps">${stepsHtml}</div>
+      <div class="prob-answer">✅ Answer: ${prob.answer}</div>
+    </div>`;
+  pc.appendChild(card);
+});
+function checkPA(pi) {
+  const val = document.getElementById('pa_' + pi).value.trim().toLowerCase().replace(/\s/g, '');
+  const ok = practiceProbs[pi].ans.some(a => val === a.toLowerCase().replace(/\s/g, ''));
+  const fb = document.getElementById('pa_fb_' + pi);
+  fb.className = 'feedback ' + (ok ? 'fb-ok' : 'fb-no');
+  fb.textContent = ok ? '✓ Correct!' : '✗ Answer: ' + practiceProbs[pi].answer;
+}
+
+/* ===== WRAP-UP MC ===== */
+function checkMC(el, correct) {
+  document.querySelectorAll('.mc-opt').forEach(o => o.className = 'mc-opt');
+  el.className = 'mc-opt ' + (correct ? 'right' : 'wrong');
+  if (correct) document.getElementById('mc-reveal').classList.add('open');
+}
+
+/* ===== RECAP ===== */
+const recapData = [
+  { q: '$1 = how many cents?', a: ['100', '100 cents'], d: '100 cents' },
+  { q: '$0.25 as a fraction?', a: ['1/4', '¼', '25/100'], d: '1/4 (one quarter)' },
+  { q: '4 × $0.25 = ?', a: ['$1', '$1.00', '1', '1.00'], d: '$1.00' },
+  { q: '$0.50 = how many quarters?', a: ['2', '2 quarters'], d: '2 quarters' },
+];
+const rqC = document.getElementById('recap-qs');
+recapData.forEach((item, i) => {
+  const row = document.createElement('div');
+  row.style = 'display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;';
+  row.innerHTML = `<span style="font-size:14px; flex:1; min-width:160px;">${item.q}</span>
+    <input class="inp inp-sm" id="rq_${i}" type="text" placeholder="?" />
+    <button class="btn btn-teal" style="font-size:12px; padding:6px 12px;" onclick="checkRQ(${i})">✓</button>
+    <span class="feedback" id="rq_fb_${i}"></span>`;
+  rqC.appendChild(row);
+});
+function checkRQ(i) {
+  const val = document.getElementById('rq_' + i).value.trim().toLowerCase().replace(/\s/g, '');
+  const ok = recapData[i].a.some(a => val === a.toLowerCase().replace(/\s/g, ''));
+  const fb = document.getElementById('rq_fb_' + i);
+  fb.className = 'feedback ' + (ok ? 'fb-ok' : 'fb-no');
+  fb.textContent = ok ? '✓' : recapData[i].d;
+}
+</script>
+</body>
+</html>
